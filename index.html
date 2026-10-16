@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoGuide - Turismo Amazônico Sustentável</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: '#1B4332',      // Verde Floresta escuro
+                        forestLight: '#2D6A4F', // Verde Floresta claro
+                        sand: '#F4F1DE',        // Bege/Areia
+                        sandDark: '#E0DDC2',    // Areia escurecida
+                        gold: '#F59E0B',        // Laranja/Dourado
+                        goldHover: '#D97706'    // Laranja/Dourado hover
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        details>summary {
+            list-style: none;
+        }
+
+        details>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] summary~* {
+            animation: slideDown 0.3s ease-in-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-white text-gray-800 antialiased selection:bg-forest selection:text-white">
+
+    <!-- Navegação Simples -->
+    <nav class="absolute top-0 w-full z-50 py-6 px-6 md:px-12 flex justify-between items-center">
+        <div class="text-white font-bold text-2xl tracking-tighter flex items-center gap-2">
+            <i class="fa-solid fa-leaf text-gold"></i> EcoGuide
+        </div>
+        <a href="#cta-final"
+            class="hidden md:inline-block bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-2 rounded-full font-semibold transition-all duration-300">
+            Contato
+        </a>
+    </nav>
+
+    <!-- 1. Topo (Hero) -->
+    <section class="relative h-screen min-h-[600px] flex items-center justify-center text-center px-6">
+        <!-- Background Image overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="image.png" alt="Floresta Amazônica e Rio" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-forest/70 mix-blend-multiply"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-forest/90"></div>
+        </div>
+
+        <div class="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
+                Descubra a Verdadeira Amazônia com a EcoGuide
+            </h1>
+            <p class="text-lg md:text-2xl text-sand mb-10 max-w-2xl font-light drop-shadow-md">
+                Experiências imersivas e sustentáveis na maior floresta tropical do mundo, conectando você à natureza.
+            </p>
+            <a href="#cta-final"
+                class="bg-gold hover:bg-goldHover text-white text-lg font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-3">
+                Reserve sua Aventura
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- 2. Problema e Solução -->
+    <section class="py-20 px-6 bg-sand text-center">
+        <div class="max-w-4xl mx-auto">
+            <div class="mb-8">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-forest/50 mb-4"></i>
+                <p class="text-xl md:text-2xl font-medium text-gray-700">
+                    "O turismo tradicional afasta você da cultura local autêntica e muitas vezes prejudica a natureza."
+                </p>
+            </div>
+
+            <div class="h-px w-24 bg-forest/20 mx-auto mb-8"></div>
+
+            <div
+                class="bg-white p-8 md:p-12 rounded-3xl shadow-lg border border-sandDark relative overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                <div class="absolute top-0 left-0 w-2 h-full bg-forest"></div>
+                <h3 class="text-sm font-bold text-forest uppercase tracking-widest mb-3">Nossa Solução</h3>
+                <p class="text-2xl md:text-3xl font-bold text-forest leading-snug">
+                    A EcoGuide conecta você a roteiros ecológicos guiados por comunidades ribeirinhas, garantindo
+                    impacto positivo e vivências reais na floresta.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Benefícios ou funcionalidades -->
+    <section class="py-24 px-6 bg-white">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-forest mb-16">Por que viajar com a gente?</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Card 1 -->
+                <div class="bg-sand p-10 rounded-3xl text-center group hover:shadow-xl transition-all duration-300">
+                    <div
+                        class="w-20 h-20 bg-forest text-sand rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-gold transition-all duration-300">
+                        <i class="fa-solid fa-leaf text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-forest mb-3">Conexão Autêntica</h3>
+                    <p class="text-gray-700">Viva o dia a dia das comunidades ribeirinhas e indígenas.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-sand p-10 rounded-3xl text-center group hover:shadow-xl transition-all duration-300">
+                    <div
+                        class="w-20 h-20 bg-forest text-sand rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-gold transition-all duration-300">
+                        <i class="fa-solid fa-dove text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-forest mb-3">Biodiversidade Única</h3>
+                    <p class="text-gray-700">Observe fauna e flora exclusivas com guias nativos experientes.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-sand p-10 rounded-3xl text-center group hover:shadow-xl transition-all duration-300">
+                    <div
+                        class="w-20 h-20 bg-forest text-sand rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-gold transition-all duration-300">
+                        <i class="fa-solid fa-recycle text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-forest mb-3">Turismo Sustentável</h3>
+                    <p class="text-gray-700">Sua viagem financia diretamente a preservação da floresta e aldeias.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Como funciona -->
+    <section class="py-24 px-6 bg-forest text-white">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-16 text-center text-sand">Como Funciona</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                <!-- Linha conectora invisível no mobile, visível no desktop -->
+                <div class="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-sand/30 z-0"></div>
+
+                <!-- Passo 1 -->
+                <div class="relative z-10 flex flex-col items-center text-center">
+                    <div
+                        class="w-24 h-24 bg-sand text-forest text-4xl font-black rounded-full flex items-center justify-center mb-6 shadow-lg border-4 border-forest">
+                        1
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-2">Escolha seu roteiro</h3>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="relative z-10 flex flex-col items-center text-center">
+                    <div
+                        class="w-24 h-24 bg-sand text-forest text-4xl font-black rounded-full flex items-center justify-center mb-6 shadow-lg border-4 border-forest">
+                        2
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-2">Faça sua reserva online</h3>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="relative z-10 flex flex-col items-center text-center">
+                    <div
+                        class="w-24 h-24 bg-gold text-white text-4xl font-black rounded-full flex items-center justify-center mb-6 shadow-lg border-4 border-forest">
+                        3
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-2">Embarque na aventura</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Prova social -->
+    <section class="py-20 px-6 bg-sand">
+        <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 items-center">
+
+            <!-- Números de Impacto -->
+            <div class="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="bg-white p-8 rounded-3xl shadow-sm text-center border border-sandDark">
+                    <span class="block text-4xl font-black text-forest mb-2">+1.200</span>
+                    <span class="text-gray-600 font-medium">Viajantes</span>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm text-center border border-sandDark">
+                    <span class="block text-4xl font-black text-gold mb-2">99%</span>
+                    <span class="text-gray-600 font-medium">de Satisfação</span>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm text-center border border-sandDark sm:col-span-2">
+                    <span class="block text-4xl font-black text-forestLight mb-2">15</span>
+                    <span class="text-gray-600 font-medium">Comunidades Apoiadas</span>
+                </div>
+            </div>
+
+            <!-- Depoimento -->
+            <div class="w-full lg:w-1/2">
+                <div class="bg-forest p-10 md:p-12 rounded-3xl text-sand relative">
+                    <i class="fa-solid fa-quote-left text-5xl opacity-20 absolute top-8 left-8"></i>
+                    <p class="text-xl md:text-2xl font-light italic relative z-10 leading-relaxed mb-6 mt-4">
+                        "A melhor viagem da minha vida. A imersão na selva foi inesquecível e com muito respeito à
+                        natureza."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-sand rounded-full flex items-center justify-center text-forest font-bold text-xl">
+                            JS</div>
+                        <div>
+                            <p class="font-bold text-white text-lg">João Silva</p>
+                            <div class="flex text-gold text-sm gap-1">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3 text-right">
+                    *Depoimento fictício para fins acadêmicos
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Sobre / Equipe -->
+    <section class="py-24 px-6 bg-white text-center">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-forest mb-16">Quem Faz Acontecer</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Membro 1 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-sand shadow-lg">
+                        <img src="https://placehold.co/400x400/1B4332/F4F1DE?text=MC" alt="Marina Costa"
+                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <h3 class="text-2xl font-bold text-forest">Marina Costa</h3>
+                    <p class="text-gray-600 mt-2 max-w-xs">
+                        Especialista em Ecoturismo, apaixonada pela conservação.
+                    </p>
+                </div>
+
+                <!-- Membro 2 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-sand shadow-lg">
+                        <img src="https://placehold.co/400x400/F59E0B/FFFFFF?text=PA" alt="Pedro Alves"
+                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <h3 class="text-2xl font-bold text-forest">Pedro Alves</h3>
+                    <p class="text-gray-600 mt-2 max-w-xs">
+                        Guia Nativo, nascido e criado no coração da floresta.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Perguntas Frequentes (FAQ) -->
+    <section class="py-24 px-6 bg-sand">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-forest mb-12 text-center">Perguntas Frequentes</h2>
+
+            <div class="space-y-4">
+                <!-- FAQ 1 -->
+                <details class="bg-white rounded-2xl shadow-sm border border-sandDark group p-6 cursor-pointer" open>
+                    <summary class="flex justify-between items-center font-bold text-lg text-forest outline-none">
+                        Preciso de vacinas?
+                        <span class="transition group-open:rotate-180">
+                            <i class="fa-solid fa-chevron-down text-gold"></i>
+                        </span>
+                    </summary>
+                    <div class="mt-4 text-gray-600 leading-relaxed">
+                        Recomendamos a vacina contra febre amarela com 10 dias de antecedência.
+                    </div>
+                </details>
+
+                <!-- FAQ 2 -->
+                <details class="bg-white rounded-2xl shadow-sm border border-sandDark group p-6 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-lg text-forest outline-none">
+                        É seguro para crianças?
+                        <span class="transition group-open:rotate-180">
+                            <i class="fa-solid fa-chevron-down text-gold"></i>
+                        </span>
+                    </summary>
+                    <div class="mt-4 text-gray-600 leading-relaxed">
+                        Sim! Temos roteiros específicos e seguros para famílias.
+                    </div>
+                </details>
+
+                <!-- FAQ 3 -->
+                <details class="bg-white rounded-2xl shadow-sm border border-sandDark group p-6 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-lg text-forest outline-none">
+                        O que levar na mala?
+                        <span class="transition group-open:rotate-180">
+                            <i class="fa-solid fa-chevron-down text-gold"></i>
+                        </span>
+                    </summary>
+                    <div class="mt-4 text-gray-600 leading-relaxed">
+                        Roupas leves, repelente, protetor solar e calçados fechados e confortáveis.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Chamada final -->
+    <section id="cta-final" class="py-24 px-6 bg-white text-center">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-black text-forest mb-8">Pronto para começar sua expedição?</h2>
+
+            <!-- Formulário Newsletter -->
+            <div class="bg-sand p-8 rounded-3xl shadow-sm border border-sandDark mb-10">
+                <form action="#" method="POST" class="flex flex-col gap-4" onsubmit="event.preventDefault();">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" placeholder="Seu Nome" required
+                            class="flex-1 px-5 py-4 rounded-xl border border-sandDark focus:outline-none focus:ring-2 focus:ring-forest bg-white text-gray-700">
+                        <input type="email" placeholder="Seu E-mail" required
+                            class="flex-1 px-5 py-4 rounded-xl border border-sandDark focus:outline-none focus:ring-2 focus:ring-forest bg-white text-gray-700">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-forest hover:bg-forestLight text-white font-bold py-4 rounded-xl transition-colors duration-300 text-lg">
+                        Cadastre-se na Newsletter
+                    </button>
+                </form>
+            </div>
+
+            <!-- CTA Principal Novamente -->
+            <div class="flex flex-col items-center gap-4">
+                <span class="text-gray-500 font-medium">Ou se preferir,</span>
+                <a href="#"
+                    class="bg-gold hover:bg-goldHover text-white text-xl font-bold py-5 px-12 rounded-full shadow-xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto">
+                    Reserve sua Aventura
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="flex items-center justify-center">
+        <a href="#"
+            class="bg-green-500 hover:bg-goldHover text-white text-xl font-bold py-4 px-8 rounded-full shadow-xl hover:-translate-y-1 transition-all duration-300 w-fit">
+            Voltar ao topo
+        </a>
+    </div><br><br>
+
+    <!-- 9. Rodapé -->
+    <footer class="bg-forest text-sand py-12 px-6">
+        <div
+            class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 border-b border-sand/20 pb-10">
+
+            <!-- Branding / Instituição -->
+            <div class="text-center md:text-left">
+                <div class="text-2xl font-bold text-white mb-2 flex items-center justify-center md:justify-start gap-2">
+                    <i class="fa-solid fa-leaf text-gold"></i> EcoGuide
+                </div>
+                <p class="text-sm text-sand/70 max-w-xs">
+                </p>
+            </div>
+
+            <!-- Contatos -->
+            <div class="text-center md:text-right">
+                <p class="font-medium text-white mb-2 text-lg">Fale com a gente</p>
+                <p class="text-sand/80 hover:text-white transition-colors cursor-pointer mb-1">ola@EcoGuide.com.br</p>
+                <p class="text-sand/80 hover:text-white transition-colors cursor-pointer mb-4">(68) 9999-0000</p>
+
+                <!-- Redes Sociais -->
+                <div class="flex items-center justify-center md:justify-end gap-4 text-2xl">
+                    <a href="#" class="text-sand/80 hover:text-gold transition-colors" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-sand/80 hover:text-gold transition-colors" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        <div class="text-center mt-8 text-sm text-sand/50">
+            &copy; 2026 EcoGuide. Todos os direitos reservados.
+        </div>
+    </footer>
+
+</body>
+
+</html>
