@@ -56,6 +56,29 @@ let checkoutStep = 0;
 let checkoutData = { name: '', email: '', cep: '', street: '', number: '', complement: '', city: 'Rio Branco', state: 'AC', shipping: 'standard', payment: 'pix', coupon: '' };
 let currentAccount = JSON.parse(localStorage.getItem('doceafeto-session') || 'null');
 
+function authenticatedAccount() {
+    try {
+        const session = JSON.parse(localStorage.getItem('doceafeto-session') || 'null');
+        if (!session?.email) return null;
+        const users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}');
+        const user = users[session.email.toLowerCase()];
+        if (!user?.passwordHash || user.email !== session.email || user.name !== session.name) return null;
+        currentAccount = { name: user.name, email: user.email, address: user.address || {} };
+        return currentAccount;
+    } catch {
+        return null;
+    }
+}
+
+function requireAccountForCheckout() {
+    if (authenticatedAccount()) return true;
+    currentAccount = null;
+    checkoutStep = 0;
+    openAccount('login');
+    toast('Entre ou crie uma conta antes de continuar com a compra.');
+    return false;
+}
+
 function escapeHtml(value = '') {
     return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -84,6 +107,11 @@ function renderCart() {
     const el = document.getElementById('cart-content');
     if (!el) return;
     const entries = cartEntries();
+    if (checkoutStep > 0 && !authenticatedAccount()) {
+        checkoutStep = 0;
+        openAccount('login');
+        toast('Entre ou crie uma conta para continuar com a compra.');
+    }
     if (!entries.length) {
         checkoutStep = 0;
         // FIX: usar button em vez de <a href> para fechar o drawer ao navegar para o catálogo
@@ -96,14 +124,13 @@ function renderCart() {
     }
     const subtotal = cartSubtotal();
     if (checkoutStep === 0) {
-        el.innerHTML = `${checkoutProgress()}<div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'"><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div><div class="coupon-box"><label for="coupon-code">Cupom de primeira compra</label><div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div><small id="coupon-message">Use AFETO10 para 10% de desconto (demonstração).</small></div><div class="cart-total"><span>Subtotal</span><span>${brl(subtotal)}</span></div>${checkoutData.coupon === 'AFETO10' ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(couponDiscount())}</span></div>` : ''}<div class="notice">Checkout demonstrativo. Seus dados ficam apenas neste navegador; nenhum pagamento será cobrado.</div><button class="btn full" id="start-checkout">Continuar para entrega · ${brl(subtotal - couponDiscount())}</button><p class="checkout-login-note">Já tem cadastro? <button class="text-button" id="checkout-login">Entre na sua conta</button> ou continue como visitante.</p>`;
+        el.innerHTML = `${checkoutProgress()}<div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'"><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div><div class="coupon-box"><label for="coupon-code">Cupom de primeira compra</label><div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div><small id="coupon-message">Use AFETO10 para 10% de desconto (demonstração).</small></div><div class="cart-total"><span>Subtotal</span><span>${brl(subtotal)}</span></div>${checkoutData.coupon === 'AFETO10' ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(couponDiscount())}</span></div>` : ''}<div class="notice">Checkout demonstrativo. Seus dados ficam apenas neste navegador; nenhum pagamento será cobrado.</div><button class="btn full" id="start-checkout">Continuar para entrega · ${brl(subtotal - couponDiscount())}</button><p class="checkout-login-note">É necessário entrar ou criar uma conta para continuar.</p>`;
         document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const id = b.dataset.qty; cart[id] = (cart[id] || 0) + Number(b.dataset.delta); if (cart[id] <= 0) delete cart[id]; saveCart(); });
         document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { delete cart[b.dataset.remove]; saveCart(); });
         document.getElementById('apply-coupon').onclick = () => { const code = document.getElementById('coupon-code').value.trim().toUpperCase(); checkoutData.coupon = code === 'AFETO10' ? code : ''; if (checkoutData.coupon) track('coupon_applied', { coupon: checkoutData.coupon }); renderCart(); document.getElementById('coupon-message').textContent = checkoutData.coupon ? 'Cupom aplicado: 10% de desconto.' : 'Cupom inválido. Confira o código e tente novamente.'; };
-        document.getElementById('start-checkout').onclick = () => { checkoutStep = 1; if (currentAccount) { checkoutData.name = currentAccount.name || ''; checkoutData.email = currentAccount.email || ''; Object.assign(checkoutData, currentAccount.address || {}); } renderCart(); track('begin_checkout', { currency: 'BRL', value: subtotal, items: entries.map(([id, q]) => ({ item_id: id, quantity: q })) }); };
-        document.getElementById('checkout-login').onclick = () => openAccount('login');
+        document.getElementById('start-checkout').onclick = () => { if (!requireAccountForCheckout()) return; checkoutData.name = currentAccount.name || ''; checkoutData.email = currentAccount.email || ''; Object.assign(checkoutData, currentAccount.address || {}); checkoutStep = 1; renderCart(); track('begin_checkout', { currency: 'BRL', value: subtotal, items: entries.map(([id, q]) => ({ item_id: id, quantity: q })) }); };
     } else if (checkoutStep === 1) {
-        el.innerHTML = `${checkoutProgress()}<form id="shipping-form" class="checkout-form"><h3>Endereço de entrega</h3><p class="muted-text">${currentAccount ? `Olá, ${escapeHtml(currentAccount.name)}. Confira o endereço.` : 'Você não poderá efetuar a compra sem criar conta.'}</p><label>Nome completo<input name="name" autocomplete="name" required value="${escapeHtml(checkoutData.name)}"></label><label>E-mail<input name="email" type="email" autocomplete="email" required value="${escapeHtml(checkoutData.email)}"></label><div class="form-row"><label>CEP<input name="cep" inputmode="numeric" maxlength="9" placeholder="69900-000" required value="${escapeHtml(checkoutData.cep)}"></label><button class="btn outline small align-end" type="button" id="lookup-cep">Consultar CEP</button></div><label>Rua / Avenida<input name="street" autocomplete="street-address" required value="${escapeHtml(checkoutData.street)}"></label><div class="form-row"><label>Número<input name="number" required value="${escapeHtml(checkoutData.number)}"></label><label>Complemento<input name="complement" value="${escapeHtml(checkoutData.complement)}"></label></div><div class="form-row"><label>Cidade<input name="city" required value="${escapeHtml(checkoutData.city)}"></label><label>UF<input name="state" maxlength="2" required value="${escapeHtml(checkoutData.state)}"></label></div><p class="shipping-result" id="shipping-quote">${checkoutData.cep.replace(/\D/g, '').length === 8 ? 'Frete calculado para o CEP informado.' : 'Informe o CEP para consultar as opções de entrega.'}</p><fieldset class="shipping-options"><legend>Escolha a entrega</legend><label><input type="radio" name="shipping" value="standard" ${checkoutData.shipping === 'standard' ? 'checked' : ''}> Padrão · R$ 12,00 · até 2 dias úteis${cartSubtotal() >= 180 ? ' · grátis' : ''}</label><label><input type="radio" name="shipping" value="express" ${checkoutData.shipping === 'express' ? 'checked' : ''}> Expressa · R$ 20,00 · 1 dia útil</label></fieldset><div class="step-actions"><button class="btn outline" type="button" id="back-cart">Voltar ao carrinho</button><button class="btn" type="submit">Escolher pagamento</button></div></form>`;
+        el.innerHTML = `${checkoutProgress()}<form id="shipping-form" class="checkout-form"><h3>Endereço de entrega</h3><p class="muted-text">Olá, ${escapeHtml(currentAccount.name)}. Confira o endereço da sua conta.</p><label>Nome completo<input name="name" autocomplete="name" required readonly value="${escapeHtml(currentAccount.name)}"></label><label>E-mail<input name="email" type="email" autocomplete="email" required readonly value="${escapeHtml(currentAccount.email)}"></label><div class="form-row"><label>CEP<input name="cep" inputmode="numeric" maxlength="9" placeholder="69900-000" required value="${escapeHtml(checkoutData.cep)}"></label><button class="btn outline small align-end" type="button" id="lookup-cep">Consultar CEP</button></div><label>Rua / Avenida<input name="street" autocomplete="street-address" required value="${escapeHtml(checkoutData.street)}"></label><div class="form-row"><label>Número<input name="number" required value="${escapeHtml(checkoutData.number)}"></label><label>Complemento<input name="complement" value="${escapeHtml(checkoutData.complement)}"></label></div><div class="form-row"><label>Cidade<input name="city" required value="${escapeHtml(checkoutData.city)}"></label><label>UF<input name="state" maxlength="2" required value="${escapeHtml(checkoutData.state)}"></label></div><p class="shipping-result" id="shipping-quote">${checkoutData.cep.replace(/\D/g, '').length === 8 ? 'Frete calculado para o CEP informado.' : 'Informe o CEP para consultar as opções de entrega.'}</p><fieldset class="shipping-options"><legend>Escolha a entrega</legend><label><input type="radio" name="shipping" value="standard" ${checkoutData.shipping === 'standard' ? 'checked' : ''}> Padrão · R$ 12,00 · até 2 dias úteis${cartSubtotal() >= 180 ? ' · grátis' : ''}</label><label><input type="radio" name="shipping" value="express" ${checkoutData.shipping === 'express' ? 'checked' : ''}> Expressa · R$ 20,00 · 1 dia útil</label></fieldset><div class="step-actions"><button class="btn outline" type="button" id="back-cart">Voltar ao carrinho</button><button class="btn" type="submit">Escolher pagamento</button></div></form>`;
         document.getElementById('lookup-cep').onclick = () => { const input = document.querySelector('[name="cep"]'), digits = input.value.replace(/\D/g, ''); document.getElementById('shipping-quote').textContent = digits.length === 8 ? 'Entrega para ' + digits.slice(0, 5) + '-' + digits.slice(5) + ': padrão R$ 12,00 (até 2 dias úteis) ou expressa R$ 20,00 (1 dia útil). Acima de R$ 180, frete padrão grátis.' : 'Digite um CEP válido com 8 números.'; if (digits.length === 8) { checkoutData.cep = digits; track('calculate_shipping', { shipping_tier: 'standard_and_express' }); } };
         document.getElementById('back-cart').onclick = () => { checkoutStep = 0; renderCart(); };
         document.getElementById('shipping-form').onsubmit = e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); if (data.cep.replace(/\D/g, '').length !== 8) { toast('Informe um CEP válido para continuar.'); return; } checkoutData = { ...checkoutData, ...data, cep: data.cep.replace(/\D/g, '') }; track('add_shipping_info', { shipping_tier: checkoutData.shipping }); checkoutStep = 2; renderCart(); };
@@ -121,6 +148,13 @@ function renderCart() {
 }
 
 function completeOrder(entries) {
+    if (!requireAccountForCheckout()) return;
+    if (!entries.length || !cartEntries().length) {
+        checkoutStep = 0;
+        renderCart();
+        toast('Sua caixinha está vazia.');
+        return;
+    }
     const order = {
         id: 'DA-' + Date.now().toString(36).toUpperCase(),
         date: new Date().toISOString(),
@@ -137,10 +171,12 @@ function completeOrder(entries) {
     const orders = JSON.parse(localStorage.getItem('doceafeto-orders') || '[]');
     orders.unshift(order);
     localStorage.setItem('doceafeto-orders', JSON.stringify(orders));
-    if (currentAccount) {
-        currentAccount.address = { cep: checkoutData.cep, street: checkoutData.street, number: checkoutData.number, complement: checkoutData.complement, city: checkoutData.city, state: checkoutData.state };
-        localStorage.setItem('doceafeto-session', JSON.stringify(currentAccount));
-    }
+    currentAccount.address = { cep: checkoutData.cep, street: checkoutData.street, number: checkoutData.number, complement: checkoutData.complement, city: checkoutData.city, state: checkoutData.state };
+    const users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}');
+    const user = users[currentAccount.email.toLowerCase()];
+    user.address = currentAccount.address;
+    localStorage.setItem('doceafeto-users', JSON.stringify(users));
+    localStorage.setItem('doceafeto-session', JSON.stringify(currentAccount));
     track('purchase', { transaction_id: order.id, currency: 'BRL', value: order.total, items: order.items.map(i => ({ item_id: i.id, item_name: i.name, quantity: i.quantity, price: i.unitPrice })) });
     cart = {};
     // Atualiza contagem sem chamar renderCart (o drawer vai ser re-renderizado logo abaixo)

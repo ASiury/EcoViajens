@@ -23,7 +23,7 @@ Abra `index.html` em um navegador ou publique os arquivos como site estático. A
 - Catálogo responsivo de geleias, compotas e kits, com busca, filtros e ordenação por preço.
 - Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos, cupom demonstrativo `AFETO10` e subtotal atualizado.
 - Consulta demonstrativa de frete por CEP (tabela simulada: R$ 12 e estimativa de 2 dias úteis em Rio Branco).
-- Checkout em etapas: endereço/CEP, opções de frete, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Frete grátis padrão a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento, e-mail ou nota fiscal é processado; não informar dados de pagamento reais.
+- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, opções de frete, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Frete grátis padrão a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento, e-mail ou nota fiscal é processado; não informar dados de pagamento reais.
 - Criação de conta, login, edição de nome/e-mail, alteração de senha, endereço salvo e histórico de pedidos neste navegador. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
 - Formulário de newsletter demonstrativo, história da marca, FAQ, atendimento e políticas no rodapé.
 - Aviso de consentimento: analytics só é carregado depois do aceite; recusar mantém o carrinho e recursos essenciais.
