@@ -12,7 +12,7 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 
 ## Inserir suas imagens
 
-Adicione suas imagens na pasta `images/` ou ajuste os caminhos no array `products` dentro de `index.html`. Os caminhos esperados no catálogo são `images/geleia-cupuacu.jpg`, `images/compota-buriti.jpg`, `images/geleia-tapereba.jpg` e `images/kit-sabores-regionais.jpg`. Para os espaços de destaque e história, substitua os blocos com os nomes `images/destaque-compotas.jpg` e `images/producao-artesanal.jpg`. A imagem da marca existente em `imgs/brand.jpeg` foi mantida.
+Adicione suas imagens na pasta `images/` ou ajuste os caminhos no array `products` dentro de `index.html`. Os caminhos esperados no catálogo são `images/geleia-cupuacu.png`, `images/compota-buriti.png`, `images/geleia-tapereba.png` e `images/kit-sabores-regionais.png`. Para os espaços de destaque e história, substitua os blocos com os nomes `images/destaque-compotas.png` e `images/producao-artesanal.png`. A imagem da marca existente em `imgs/brand.jpeg` foi mantida.
 
 ## Como abrir
 
