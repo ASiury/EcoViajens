@@ -5,7 +5,6 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 ## Apresentação do negócio
 
 - **Marca:** Doce Afeto.
-- **URL pública:** ainda não publicada. O projeto está pronto para hospedagem estática, mas precisa ser enviado a uma conta de hospedagem para gerar um endereço HTTPS.
 - **Segmento:** alimentos artesanais, compotas e geleias de frutas regionais.
 - **Público-alvo:** pessoas em Rio Branco e região que procuram sabores amazônicos, produtos caseiros e presentes com identidade regional.
 - **Proposta de valor:** compotas e geleias caseiras em pequenos lotes, valorizando frutas regionais e receitas de família.
@@ -22,10 +21,11 @@ Abra `index.html` em um navegador ou publique os arquivos como site estático. A
 ## Funcionalidades implementadas
 
 - Catálogo responsivo de geleias, compotas e kits, com busca, filtros e ordenação por preço.
-- Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos e subtotal.
+- Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos, cupom demonstrativo `AFETO10` e subtotal atualizado.
 - Consulta demonstrativa de frete por CEP (tabela simulada: R$ 12 e estimativa de 2 dias úteis em Rio Branco).
-- Formulário de checkout de demonstração com Pix, cartão sandbox e carteira digital simulados. Nenhuma cobrança, pedido real, e-mail ou nota fiscal é processado; não informar dados de pagamento reais.
-- Formulário de newsletter de demonstração, história da marca, FAQ, atendimento e políticas no rodapé.
+- Checkout em etapas: endereço/CEP, opções de frete, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Frete grátis padrão a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento, e-mail ou nota fiscal é processado; não informar dados de pagamento reais.
+- Criação de conta, login, edição de nome/e-mail, alteração de senha, endereço salvo e histórico de pedidos neste navegador. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
+- Formulário de newsletter demonstrativo, história da marca, FAQ, atendimento e políticas no rodapé.
 - Aviso de consentimento: analytics só é carregado depois do aceite; recusar mantém o carrinho e recursos essenciais.
 
 ## Marketing digital e 4Ps
@@ -42,7 +42,7 @@ Modelo B2C direto ao consumidor, com produção sob encomenda e foco local. Parc
 
 O fluxo financeiro previsto é criar uma preferência de pagamento no gateway e confirmar o status por retorno/webhook seguro. Pix, cartões e carteiras digitais são apenas opções simuladas na interface; não inserir dados bancários. Após a confirmação, o backend de produção integraria o pedido ao emissor fiscal para emitir NF-e/NFS-e e enviar o documento ao cliente.
 
-O e-CRM está representado por canais de contato, formulário de captação, carrinho salvo localmente e confirmação visual do pedido simulado. Autenticação, área logada, chatbot e e-mails de confirmação/pós-venda exigem backend e serviços externos e não estão ativos.
+O e-CRM inclui conta demonstrativa, dados de perfil, endereço e histórico de pedidos guardados localmente, além de canais de contato e formulário de captação. Cadastro, sessão e pedidos só existem neste navegador; não há recuperação de senha, autenticação de servidor, sincronização, chatbot ou e-mails de confirmação/pós-venda. Para uma loja real, mover identidade e dados para backend seguro e integrar provedores de identidade e comunicação.
 
 Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar API de cotação/rastreamento e validar CEP. A política exibida informa o direito de arrependimento de 7 dias para compras online, conforme legislação aplicável; implementar atendimento e processo real antes de vender.
 
@@ -50,7 +50,7 @@ Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar 
 
 - **Measurement ID presente no código:** `G-BMBTCY4ZDR` (herdado da configuração anterior do projeto; confirme que a propriedade GA4 pertence ao responsável pela entrega antes de publicar).
 - O script do GA4 só é inserido após aceite de cookies analíticos.
-- Eventos enviados quando há consentimento: `page_view` (configuração GA4), `view_item_list`, `add_to_cart`, `view_cart`, `calculate_shipping`, `begin_checkout`, `purchase` (pedido simulado) e `generate_lead`.
+- Eventos enviados quando há consentimento: `page_view` (configuração GA4), `view_item_list`, `add_to_cart`, `view_cart`, `coupon_applied`, `calculate_shipping`, `begin_checkout`, `add_shipping_info`, `add_payment_info`, `purchase` (pedido simulado) e `generate_lead`.
 - Relatórios de páginas, usuários, tempo médio de engajamento e canais ficam disponíveis no GA4 depois que houver tráfego consentido. Os dados podem levar algum tempo para aparecer; usar DebugView/Realtime para conferir a propriedade.
 - Este repositório não contém capturas de tela nem evidência de tráfego: precisam ser geradas na conta GA4 após publicação. UTMs em campanhas ajudam a separar tráfego pago, social e e-mail; busca orgânica e tráfego direto são classificados pelo GA4.
 
@@ -60,4 +60,4 @@ O site exibe política de privacidade/cookies, canal de atendimento, informaçã
 
 ## Publicação
 
-Hospede `index.html` em serviço de páginas estáticas (por exemplo, GitHub Pages, Netlify ou Vercel) e confirme HTTPS no domínio gerado. A URL pública não pode ser declarada até a implantação em uma conta. O site não usa backend, portanto cadastro/autenticação de conta e processamento real de pedidos ainda não são oferecidos.
+Hospede `index.html` em serviço de páginas estáticas (por exemplo, GitHub Pages, Netlify ou Vercel) e confirme HTTPS no domínio gerado. A URL pública não pode ser declarada até a implantação em uma conta. O site não usa backend: conta, carrinho e histórico são demonstrações locais e não oferecem autenticação segura de produção ou processamento real de pedidos.
