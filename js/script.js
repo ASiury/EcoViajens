@@ -99,13 +99,42 @@ document.getElementById('cart-open').onclick = () => {
     document.getElementById('cart').classList.add('open'); track('view_cart')
 }; document.getElementById('account-open').onclick = () => openAccount(currentAccount ? 'profile' : 'login'); document.getElementById('cart-close').onclick = () => document.getElementById('cart').classList.remove('open'); document.getElementById('cart').onclick = e => { if (e.target.id === 'cart') e.currentTarget.classList.remove('open') };
 
-document.getElementById('newsletter').onsubmit = e => { e.preventDefault(); track('generate_lead', { method: 'newsletter' }); toast('Cadastro demonstrativo recebido. Obrigada!'); e.target.reset() };
+document.getElementById('newsletter').onsubmit = e => { e.preventDefault(); track('generate_lead', { method: 'newsletter' }); toast('Cadastro demonstrativo recebido. Obrigado!'); e.target.reset() };
 
 const policies = { politica: `<h2>Privacidade e cookies</h2><p>Este projeto é uma demonstração acadêmica da marca fictícia Doce Afeto. Os dados de conta, endereço, carrinho e pedidos ficam somente no armazenamento local deste navegador; nada é enviado a um servidor nem usado para cobrança. Não use dados pessoais ou senhas reais.</p><p>Com seu consentimento, o Google Analytics (ID ${GA_ID}) coleta dados de navegação pseudonimizados para estatísticas de uso. Você pode recusar cookies analíticos sem perder as funções essenciais. O site não deve ser usado para inserir dados pessoais reais.</p><p>Em uma operação comercial, a empresa responsável identificaria o controlador, canal de contato, finalidades e bases legais de tratamento, prazos de retenção e direitos do titular, conforme a LGPD.</p>`, trocas: `<h2>Entrega, trocas e devoluções</h2><p>Esta loja é uma simulação sem venda real. Em uma operação real, o prazo e o frete seriam confirmados antes da conclusão do pedido, e a política detalharia conservação e transporte de alimentos.</p><p>Para compras realizadas fora do estabelecimento, o consumidor pode exercer o direito de arrependimento em até 7 dias, conforme a legislação aplicável. Entre em contato pelo canal de atendimento para registrar a solicitação.</p>` }; document.querySelectorAll('[data-modal]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById('modal-content').innerHTML = policies[a.dataset.modal]; document.getElementById('modal').classList.add('open') }); document.getElementById('modal-close').onclick = () => document.getElementById('modal').classList.remove('open'); document.getElementById('modal').onclick = e => { if (e.target.id === 'modal') e.currentTarget.classList.remove('open') };
 
-function initAnalytics() { if (localStorage.getItem('doceafeto-analytics') !== 'accepted') return; window.dataLayer = window.dataLayer || []; window.gtag = function () { dataLayer.push(arguments) }; gtag('js', new Date()); gtag('config', GA_ID, { anonymize_ip: true }); let s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s); }
+function initAnalytics() {
+    if (localStorage.getItem('doceafeto-analytics') !== 'accepted') {
+        return;
+    }
 
-const consent = localStorage.getItem('doceafeto-analytics'); if (!consent) document.
+    if (window.analyticsInitialized) {
+        return;
+    }
+
+    window.analyticsInitialized = true;
+
+    window.dataLayer = window.dataLayer || [];
+
+    window.gtag = function () {
+        window.dataLayer.push(arguments);
+    };
+
+    gtag('js', new Date());
+
+    gtag('config', GA_ID, {
+        anonymize_ip: true,
+        cookie_domain: 'auto'
+    });
+    const script = document.createElement('script');
+
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+
+    document.head.appendChild(script);
+}
+
+    const consent = localStorage.getItem('doceafeto-analytics'); if (!consent) document.
 
     getElementById('cookie').hidden = false; document.
 
