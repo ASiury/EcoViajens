@@ -1118,6 +1118,145 @@ details p {
 .modal-close-btn {
     float: right
 }
+
+/* ── Nav: botão Acompanhar pedido ── */
+
+.nav-track-btn {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap
+}
+
+.nav-track-btn:hover {
+    color: var(--green)
+}
+
+/* ── Rastreador de pedido ── */
+
+.track-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin: 14px 0;
+    background: white
+}
+
+.track-card--new {
+    border-color: var(--green);
+    background: #f4f8f1
+}
+
+.track-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px
+}
+
+.track-id {
+    display: block;
+    font-size: 15px;
+    font-family: 'Playfair Display', serif
+}
+
+.track-date {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 3px
+}
+
+.track-total {
+    font-size: 17px;
+    white-space: nowrap
+}
+
+.track-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--green);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    vertical-align: middle
+}
+
+.track-timeline {
+    display: flex;
+    gap: 0;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 4px
+}
+
+.track-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    position: relative
+}
+
+.track-step:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    right: 50%;
+    width: 100%;
+    height: 2px;
+    background: var(--line)
+}
+
+.track-step.done:not(:first-child)::before {
+    background: var(--green)
+}
+
+.track-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    background: white;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1
+}
+
+.track-step.done .track-dot {
+    background: var(--green);
+    border-color: var(--green)
+}
+
+.track-step.done {
+    color: var(--ink)
+}
+
+.track-details {
+    border-top: 1px solid var(--line);
+    padding-top: 10px
+}
+
+.track-details summary {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green)
+}
+
+.track-items {
+    margin-top: 10px
+}
+
 @media(max-width:900px) {
     .grid {
         grid-template-columns: repeat(2, 1fr)
@@ -1172,6 +1311,10 @@ details p {
     }
 
     .nav-links {
+        display: none
+    }
+
+    .nav-track-btn {
         display: none
     }
 
