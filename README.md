@@ -10,13 +10,6 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 - **Proposta de valor:** compotas e geleias caseiras em pequenos lotes, valorizando frutas regionais e receitas de família.
 - **Tipologia:** vitrine de e-commerce B2C com catálogo, carrinho e checkout demonstrativo.
 
-## Inserir suas imagens
-
-Adicione suas imagens na pasta `images/` ou ajuste os caminhos no array `products` dentro de `index.html`. Os caminhos esperados no catálogo são `images/geleia-cupuacu.png`, `images/compota-buriti.png`, `images/geleia-tapereba.png` e `images/kit-sabores-regionais.png`. Para os espaços de destaque e história, substitua os blocos com os nomes `images/destaque-compotas.png` e `images/producao-artesanal.png`. A imagem da marca existente em `imgs/brand.jpeg` foi mantida.
-
-## Como abrir
-
-Abra `index.html` em um navegador ou publique os arquivos como site estático. A aplicação não tem etapa de compilação. As imagens são espaços reservados para você inserir seus próprios arquivos; as fontes vêm do Google Fonts e dependem de conexão externa.
 
 ## Funcionalidades implementadas
 
@@ -57,7 +50,3 @@ Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar 
 ## Privacidade, conformidade e limites
 
 O site exibe política de privacidade/cookies, canal de atendimento, informação de entrega, política de trocas/devoluções e referência ao direito de arrependimento. A marca e os contatos exibidos são demonstrativos. Antes de uma operação real, substitua os dados fictícios, publique uma política revisada pelo responsável, implemente controles LGPD, segurança de backend, confirmação de pedido, pagamento seguro, emissão fiscal e logística. Consentimento analítico é guardado no armazenamento local do navegador.
-
-## Publicação
-
-Hospede `index.html` em serviço de páginas estáticas (por exemplo, GitHub Pages, Netlify ou Vercel) e confirme HTTPS no domínio gerado. A URL pública não pode ser declarada até a implantação em uma conta. O site não usa backend: conta, carrinho e histórico são demonstrações locais e não oferecem autenticação segura de produção ou processamento real de pedidos.
