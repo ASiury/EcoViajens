@@ -13,13 +13,14 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 
 ## Funcionalidades implementadas
 
-- Catálogo responsivo de geleias, compotas e kits, com busca, filtros e ordenação por preço.
-- Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos, cupom demonstrativo `AFETO10` e subtotal atualizado.
+- Catálogo responsivo de geleias, compotas e kits, com busca, filtros por categoria e faixa de preço, além de ordenação por preço.
+- Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos, cupom demonstrativo `AFETO10` e resumo em tempo real de subtotal, descontos e frete estimado.
 - Consulta demonstrativa de frete por CEP: R$ 12 na zona urbana de Rio Branco, R$ 20 na zona rural e R$ 30 em Bujari, Senador Guiomard, Porto Acre, Plácido de Castro, Sena Madureira e Capixaba. O cliente seleciona a zona urbana ou rural em Rio Branco; o checkout valida CEPs do Acre (faixa 699) e não permite entregas em outros estados ou cidades fora da área atendida.
-- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, frete por região, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Pix mostra um QR visual e um código textual não pagáveis. Frete grátis a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento ou e-mail é processado; não informar dados de pagamento reais.
+- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, frete por região, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Pix mostra um QR e um código textual fictícios, com opção de copiar o texto; nenhum deles é pagável. Frete grátis a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento ou e-mail é processado; não informar dados de pagamento reais.
 - Após a confirmação, é exibida uma prévia local de NF-e de produtos e um exemplo separado de NFS-e, ambos sem validade fiscal e sem transmissão à SEFAZ ou prefeitura.
 - Criação de conta e login, edição de nome/e-mail, alteração de senha e edição do endereço completo (CEP, rua, número, complemento, cidade/UF e zona urbana/rural) neste navegador, além do histórico de pedidos. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
 - História da marca, seção de dicas, banner de indicação demonstrativo, FAQ, atendimento e políticas no rodapé.
+- Widget de atendimento automático com respostas predefinidas sobre frete, pagamentos, cupons, conta e pedidos. A conversa funciona apenas na página, não é salva nem enviada a um atendente.
 - CTA de criação de conta na oferta; CNPJ, contatos e links de redes sociais são fictícios e identificados como tal na página.
 - Aviso de consentimento: analytics só é carregado depois do aceite; recusar mantém o carrinho e recursos essenciais.
 
@@ -37,7 +38,7 @@ Modelo B2C direto ao consumidor, com produção sob encomenda e foco local. Parc
 
 O fluxo financeiro previsto é criar uma preferência de pagamento no gateway e confirmar o status por retorno/webhook seguro. Pix, cartões e carteiras digitais são apenas opções simuladas na interface; não inserir dados bancários. Após a confirmação, o backend de produção integraria o pedido ao emissor fiscal para emitir NF-e/NFS-e e enviar o documento ao cliente.
 
-O e-CRM inclui conta demonstrativa, dados de perfil, endereço e histórico de pedidos guardados localmente, além de canais de contato e formulário de captação. Cadastro, sessão e pedidos só existem neste navegador; não há recuperação de senha, autenticação de servidor, sincronização, chatbot ou e-mails de confirmação/pós-venda. Para uma loja real, mover identidade e dados para backend seguro e integrar provedores de identidade e comunicação.
+O e-CRM inclui conta demonstrativa, dados de perfil, endereço e histórico de pedidos guardados localmente, além de canais de contato e formulário de captação. Cadastro, sessão e pedidos só existem neste navegador; não há recuperação de senha, autenticação de servidor, sincronização, atendimento humano ou e-mails de confirmação/pós-venda. O chat automatizado responde apenas a perguntas frequentes predefinidas, sem serviço externo. Para uma loja real, mover identidade e dados para backend seguro e integrar provedores de identidade e comunicação.
 
 Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar API de cotação/rastreamento e validar CEP/endereço. A política exibida informa o direito de arrependimento de 7 dias para compras online, conforme legislação aplicável; implementar atendimento e processo real antes de vender.
 

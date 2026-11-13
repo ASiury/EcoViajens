@@ -82,6 +82,16 @@
                         <option value="high">Maior preço</option>
                     </select>
                 </div>
+                <div class="price-filter" role="group" aria-label="Filtrar produtos por preço">
+                    <label for="price-min">Preço mínimo (R$)
+                        <input id="price-min" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Sem mínimo">
+                    </label>
+                    <label for="price-max">Preço máximo (R$)
+                        <input id="price-max" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Sem máximo">
+                    </label>
+                    <button class="btn outline small" id="clear-price-filter" type="button">Limpar preços</button>
+                    <p class="filter-status" id="price-filter-status" role="status" aria-live="polite"></p>
+                </div>
                 <div class="filters" aria-label="Categorias"><button class="filter active"
                         data-filter="todos">Todos</button><button class="filter"
                         data-filter="geleias">Geleias</button><button class="filter"
@@ -256,6 +266,38 @@
         </article>
     </div>
     <div class="toast" id="toast" role="status"></div>
+    <div class="chat-widget" id="chat-widget">
+        <button class="chat-toggle" id="chat-toggle" type="button" aria-controls="chat-panel"
+            aria-expanded="false" aria-label="Abrir atendimento automatizado">
+            <span aria-hidden="true">✦</span> Atendimento
+        </button>
+        <section class="chat-panel" id="chat-panel" aria-labelledby="chat-title" hidden>
+            <header class="chat-header">
+                <div>
+                    <h2 id="chat-title">Atendimento Doce Afeto</h2>
+                    <p>Assistente automático · demonstração</p>
+                </div>
+                <button class="chat-close" id="chat-close" type="button" aria-label="Fechar atendimento">×</button>
+            </header>
+            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-relevant="additions"
+                aria-label="Conversa com o atendimento automático">
+                <p class="chat-message assistant">Olá! Posso ajudar com entrega, pagamentos, cupons ou pedidos. O que você gostaria de saber?</p>
+            </div>
+            <div class="chat-quick-replies" aria-label="Perguntas rápidas">
+                <button type="button" data-chat-question="Como funciona a entrega e o frete?">Entrega e frete</button>
+                <button type="button" data-chat-question="Quais são as formas de pagamento?">Pagamento</button>
+                <button type="button" data-chat-question="Como funciona o cupom?">Cupom</button>
+                <button type="button" data-chat-question="Como acompanho meu pedido?">Pedidos</button>
+            </div>
+            <form class="chat-form" id="chat-form">
+                <label class="chat-sr-only" for="chat-input">Digite sua pergunta</label>
+                <input id="chat-input" name="message" type="text" maxlength="240" autocomplete="off"
+                    placeholder="Digite sua pergunta..." required>
+                <button type="submit">Enviar</button>
+            </form>
+            <p class="chat-disclaimer">Respostas predefinidas. Esta conversa não é enviada nem salva. Não informe dados pessoais ou de pagamento.</p>
+        </section>
+    </div>
     <script src="js/script.js"></script>
 </body>
 

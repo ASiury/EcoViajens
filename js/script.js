@@ -18,16 +18,33 @@ function imageUrl(path) { return path || ''; }
 
 function renderProducts() {
     let q = document.getElementById('search').value.trim().toLowerCase();
+    const minInput = document.getElementById('price-min');
+    const maxInput = document.getElementById('price-max');
+    const minPrice = minInput.value === '' ? null : Number(minInput.value);
+    const maxPrice = maxInput.value === '' ? null : Number(maxInput.value);
+    const invalidPriceInput = !minInput.validity.valid || !maxInput.validity.valid;
+    const invalidPriceRange = minPrice !== null && maxPrice !== null && minPrice > maxPrice;
     let list = products.filter(p =>
         (activeFilter === 'todos' || p.category === activeFilter) &&
-        (`${p.name} ${p.desc}`).toLowerCase().includes(q)
+        (`${p.name} ${p.desc}`).toLowerCase().includes(q) &&
+        (minPrice === null || p.price >= minPrice) &&
+        (maxPrice === null || p.price <= maxPrice)
     );
+    const priceFilterStatus = document.getElementById('price-filter-status');
+    if (invalidPriceInput || invalidPriceRange) list = [];
+    priceFilterStatus.textContent = invalidPriceInput
+        ? 'Informe valores de preço válidos e não negativos.'
+        : invalidPriceRange
+            ? 'O preço mínimo não pode ser maior que o máximo.'
+            : `${list.length} ${list.length === 1 ? 'produto encontrado' : 'produtos encontrados'}.`;
     const sort = document.getElementById('sort').value;
     if (sort === 'low') list.sort((a, b) => a.price - b.price);
     if (sort === 'high') list.sort((a, b) => b.price - a.price);
-    document.getElementById('products').innerHTML = list.length
-        ? list.map(p => `<article class="product"><div class="product-photo" data-label="${p.name}"><img src="${imageUrl(p.img)}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.add('needs-image')"><span class="badge">${p.badge}</span></div><div class="product-info"><span class="product-category">${p.category === 'kits' ? 'Kits-presente' : p.category}</span><h3>${p.name}</h3><p class="product-desc">${p.desc}</p><div class="price-row"><div><span class="price">${brl(p.price)}</span><span class="pix">${brl(p.price * .95)} no Pix (5% off)</span></div><button class="add-btn" data-add="${p.id}" aria-label="Adicionar ${p.name} ao carrinho">+</button></div></div></article>`).join('')
-        : '<p>Nenhum doce encontrado. Tente outra busca.</p>';
+    document.getElementById('products').innerHTML = invalidPriceInput || invalidPriceRange
+        ? `<p class="filter-error">${escapeHtml(priceFilterStatus.textContent)}</p>`
+        : list.length
+            ? list.map(p => `<article class="product"><div class="product-photo" data-label="${p.name}"><img src="${imageUrl(p.img)}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.add('needs-image')"><span class="badge">${p.badge}</span></div><div class="product-info"><span class="product-category">${p.category === 'kits' ? 'Kits-presente' : p.category}</span><h3>${p.name}</h3><p class="product-desc">${p.desc}</p><div class="price-row"><div><span class="price">${brl(p.price)}</span><span class="pix">${brl(p.price * .95)} no Pix (5% off)</span></div><button class="add-btn" data-add="${p.id}" aria-label="Adicionar ${p.name} ao carrinho">+</button></div></div></article>`).join('')
+            : '<p>Nenhum produto encontrado com esses filtros. Ajuste a busca ou a faixa de preço.</p>';
     document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => addToCart(b.dataset.add));
 }
 
@@ -112,9 +129,22 @@ function deliveryAreaLabel(area, city = '') {
 }
 
 function shippingCost() {
-    const area = deliveryArea(checkoutData.city, checkoutData.state, checkoutData.deliveryZone, checkoutData.cep);
-    if (!area) throw new Error('Não há uma tarifa de frete disponível para este endereço.');
+    const estimate = shippingEstimateFor(checkoutData);
+    if (estimate === null) throw new Error('Não há uma tarifa de frete disponível para este endereço.');
+    return estimate;
+}
+
+function shippingEstimateFor(address) {
+    const area = deliveryArea(address.city, address.state, address.deliveryZone, address.cep);
+    if (!area) return null;
     return cartSubtotal() >= 180 ? 0 : DELIVERY_RATES[area];
+}
+
+function cartShippingEstimate() {
+    const currentAddressEstimate = shippingEstimateFor(checkoutData);
+    if (currentAddressEstimate !== null) return currentAddressEstimate;
+    const account = authenticatedAccount();
+    return account ? shippingEstimateFor(account.address || {}) : null;
 }
 
 function shippingQuoteText(cep, city, state, zone) {
@@ -140,6 +170,20 @@ function paymentDiscount() { return checkoutData.payment === 'pix' ? (cartSubtot
 
 function orderTotal() { return Math.max(0, cartSubtotal() - couponDiscount() - paymentDiscount() + shippingCost()); }
 
+function orderBreakdownMarkup(shippingEstimate) {
+    const subtotal = cartSubtotal();
+    const coupon = couponDiscount();
+    const payment = paymentDiscount();
+    const total = Math.max(0, subtotal - coupon - payment + (shippingEstimate === null ? 0 : shippingEstimate));
+    return `<section class="order-breakdown" aria-label="Resumo atualizado do pedido" aria-live="polite" aria-atomic="true">
+        <div class="summary-line"><span>Subtotal</span><span>${brl(subtotal)}</span></div>
+        ${coupon ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(coupon)}</span></div>` : ''}
+        ${payment ? `<div class="summary-line"><span>Desconto Pix (5%)</span><span>− ${brl(payment)}</span></div>` : ''}
+        <div class="summary-line"><span>Frete</span><span>${shippingEstimate === null ? 'Consulte seu CEP' : shippingEstimate === 0 ? 'Grátis' : brl(shippingEstimate)}</span></div>
+        <div class="cart-total"><span>${shippingEstimate === null ? 'Total parcial' : 'Total estimado'}</span><span>${brl(total)}</span></div>
+    </section>`;
+}
+
 function checkoutProgress() {
     return `<div class="checkout-progress">${['Carrinho', 'Entrega', 'Pagamento', 'Revisão'].map((label, i) => `<span class="${checkoutStep >= i ? 'done' : ''}"><b>${i + 1}</b>${label}</span>`).join('')}</div>`;
 }
@@ -162,9 +206,32 @@ function pixDemoMarkup() {
     }
     return `<div class="pix-demo" role="group" aria-label="Representação ilustrativa de Pix, sem cobrança">
         <div class="pix-demo-visual"><svg viewBox="0 0 21 21" role="img" aria-label="Imagem ilustrativa, não é um QR Code válido">${modules.join('')}</svg></div>
-        <div><b>Pix demonstrativo</b><p>Imagem e código fictícios. Não escaneie nem use para pagar.</p>
-        <code>PIX-DEMO-NAO-PAGAVEL-DOCE-AFETO</code></div>
+        <div class="pix-demo-content"><b>Pix demonstrativo</b><p>Imagem e código fictícios. Não escaneie nem use para pagar.</p>
+            <label class="pix-code-label" for="pix-demo-code">Código demonstrativo (não pagável)</label>
+            <div class="pix-copy-row">
+                <textarea id="pix-demo-code" class="pix-demo-code" rows="2" readonly aria-label="Código Pix demonstrativo, não pagável">PIX-DEMO-NAO-PAGAVEL-DOCE-AFETO</textarea>
+                <button class="btn outline small" id="copy-pix-code" type="button" aria-label="Copiar código Pix demonstrativo">Copiar código</button>
+            </div>
+            <p class="pix-copy-status" id="pix-copy-status" role="status" aria-live="polite"></p>
+        </div>
     </div>`;
+}
+
+async function copyPixDemoCode() {
+    const code = document.getElementById('pix-demo-code');
+    const status = document.getElementById('pix-copy-status');
+    try {
+        await navigator.clipboard.writeText(code.value);
+        status.textContent = 'Código demonstrativo copiado. Ele não pode ser usado para pagar.';
+    } catch {
+        code.focus();
+        code.select();
+        let copied = false;
+        try { copied = document.execCommand('copy'); } catch { copied = false; }
+        status.textContent = copied
+            ? 'Código demonstrativo copiado. Ele não pode ser usado para pagar.'
+            : 'Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.';
+    }
 }
 
 function fiscalDemoMarkup(order) {
@@ -208,7 +275,17 @@ function renderCart() {
     }
     const subtotal = cartSubtotal();
     if (checkoutStep === 0) {
-        el.innerHTML = `${checkoutProgress()}<div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'" fetchpriority=high><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div><div class="coupon-box"><label for="coupon-code">Cupom de primeira compra</label><div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div><small id="coupon-message">Use AFETO10 para 10% de desconto (demonstração).</small></div><div class="cart-total"><span>Subtotal</span><span>${brl(subtotal)}</span></div>${checkoutData.coupon === 'AFETO10' ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(couponDiscount())}</span></div>` : ''}<div class="notice">Checkout demonstrativo. Seus dados ficam apenas neste navegador; nenhum pagamento será cobrado.</div><button class="btn full" id="start-checkout">Continuar para entrega · ${brl(subtotal - couponDiscount())}</button><p class="checkout-login-note">É necessário entrar ou criar uma conta para continuar.</p>`;
+        el.innerHTML = `${checkoutProgress()}
+            <div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'" fetchpriority=high><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div>
+            <div class="coupon-box">
+                <label for="coupon-code">Cupom de primeira compra</label>
+                <div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div>
+                <small id="coupon-message">Use AFETO10 para 10% de desconto (demonstração).</small>
+            </div>
+            ${orderBreakdownMarkup(cartShippingEstimate())}
+            <div class="notice">Checkout demonstrativo. Seus dados ficam apenas neste navegador; nenhum pagamento será cobrado.</div>
+            <button class="btn full" id="start-checkout">Continuar para entrega</button>
+            <p class="checkout-login-note">É necessário entrar ou criar uma conta para continuar.</p>`;
         document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const id = b.dataset.qty; cart[id] = (cart[id] || 0) + Number(b.dataset.delta); if (cart[id] <= 0) delete cart[id]; saveCart(); });
         document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { delete cart[b.dataset.remove]; saveCart(); });
         document.getElementById('apply-coupon').onclick = () => { const code = document.getElementById('coupon-code').value.trim().toUpperCase(); checkoutData.coupon = code === 'AFETO10' ? code : ''; if (checkoutData.coupon) track('coupon_applied', { coupon: checkoutData.coupon }); renderCart(); document.getElementById('coupon-message').textContent = checkoutData.coupon ? 'Cupom aplicado: 10% de desconto.' : 'Cupom inválido. Confira o código e tente novamente.'; };
@@ -244,6 +321,7 @@ function renderCart() {
                 </select>
             </label>
             <p class="shipping-result" id="shipping-quote" role="status" aria-live="polite">${escapeHtml(initialQuote)}</p>
+            <div id="live-order-summary">${orderBreakdownMarkup(shippingEstimateFor(checkoutData))}</div>
             <p class="muted-text">Cidades próximas: ${NEARBY_DELIVERY_CITIES.join(', ')} · R$ 30,00. Frete grátis em pedidos a partir de R$ 180,00.</p>
             <div class="step-actions">
                 <button class="btn outline" type="button" id="back-cart">Voltar ao carrinho</button>
@@ -253,26 +331,25 @@ function renderCart() {
         const shippingForm = document.getElementById('shipping-form');
         const shippingQuote = document.getElementById('shipping-quote');
         const zoneField = document.getElementById('rio-branco-zone-field');
-        const refreshShippingPrompt = () => {
+        const liveOrderSummary = document.getElementById('live-order-summary');
+        const refreshShippingEstimate = (trackQuery = false) => {
+            const data = Object.fromEntries(new FormData(shippingForm));
+            const cep = String(data.cep).replace(/\D/g, '');
             const isRioBranco = normalizeCity(shippingForm.elements.city.value) === 'rio branco';
             const isAcre = shippingForm.elements.state.value.trim().toUpperCase() === 'AC';
             zoneField.hidden = !isRioBranco || !isAcre;
-            shippingQuote.classList.remove('unavailable');
-            shippingQuote.textContent = 'Consulte o CEP novamente para atualizar o frete estimado.';
-        };
-        ['cep', 'city', 'state'].forEach(name => shippingForm.elements[name].addEventListener('input', refreshShippingPrompt));
-        shippingForm.elements.deliveryZone.addEventListener('change', refreshShippingPrompt);
-        document.getElementById('lookup-cep').onclick = () => {
-            const data = Object.fromEntries(new FormData(shippingForm));
-            const message = shippingQuoteText(data.cep, data.city, data.state, data.deliveryZone);
-            const area = deliveryArea(data.city, data.state, data.deliveryZone, data.cep);
-            shippingQuote.textContent = message;
-            shippingQuote.classList.toggle('unavailable', !area && String(data.cep).replace(/\D/g, '').length === 8);
-            if (area && String(data.cep).replace(/\D/g, '').length === 8) {
-                checkoutData.cep = String(data.cep).replace(/\D/g, '');
+            const area = deliveryArea(data.city, data.state, data.deliveryZone, cep);
+            shippingQuote.textContent = shippingQuoteText(data.cep, data.city, data.state, data.deliveryZone);
+            shippingQuote.classList.toggle('unavailable', !area && cep.length === 8);
+            liveOrderSummary.innerHTML = orderBreakdownMarkup(shippingEstimateFor({ ...data, cep }));
+            if (trackQuery && area) {
+                checkoutData.cep = cep;
                 track('calculate_shipping', { shipping_tier: area });
             }
         };
+        ['cep', 'city', 'state'].forEach(name => shippingForm.elements[name].addEventListener('input', refreshShippingEstimate));
+        shippingForm.elements.deliveryZone.addEventListener('change', refreshShippingEstimate);
+        document.getElementById('lookup-cep').onclick = () => refreshShippingEstimate(true);
         document.getElementById('back-cart').onclick = () => { checkoutStep = 0; renderCart(); };
         shippingForm.onsubmit = e => {
             e.preventDefault();
@@ -294,8 +371,10 @@ function renderCart() {
             renderCart();
         };
     } else if (checkoutStep === 2) {
-        el.innerHTML = `${checkoutProgress()}<form id="payment-form" class="checkout-form"><h3>Forma de pagamento</h3><label class="payment-option"><input type="radio" name="payment" value="pix" ${checkoutData.payment === 'pix' ? 'checked' : ''}><span><b>Pix</b><small>Simulação · 5% de desconto</small></span></label><label class="payment-option"><input type="radio" name="payment" value="card" ${checkoutData.payment === 'card' ? 'checked' : ''}><span><b>Cartão de crédito</b><small>Simulação em ambiente de teste · sem informar número do cartão</small></span></label><label class="payment-option"><input type="radio" name="payment" value="wallet" ${checkoutData.payment === 'wallet' ? 'checked' : ''}><span><b>Carteira digital</b><small>Simulação · nenhuma carteira será acessada</small></span></label>${checkoutData.payment === 'pix' ? pixDemoMarkup() : ''}<div class="notice">Não informe número de cartão, senha bancária ou chave Pix. Esta demonstração não se conecta a um intermediador.</div><div class="step-actions"><button class="btn outline" type="button" id="back-shipping">Voltar</button><button class="btn" type="submit">Revisar pedido</button></div></form>`;
+        el.innerHTML = `${checkoutProgress()}<form id="payment-form" class="checkout-form"><h3>Forma de pagamento</h3><label class="payment-option"><input type="radio" name="payment" value="pix" ${checkoutData.payment === 'pix' ? 'checked' : ''}><span><b>Pix</b><small>Simulação · 5% de desconto</small></span></label><label class="payment-option"><input type="radio" name="payment" value="card" ${checkoutData.payment === 'card' ? 'checked' : ''}><span><b>Cartão de crédito</b><small>Simulação em ambiente de teste · sem informar número do cartão</small></span></label><label class="payment-option"><input type="radio" name="payment" value="wallet" ${checkoutData.payment === 'wallet' ? 'checked' : ''}><span><b>Carteira digital</b><small>Simulação · nenhuma carteira será acessada</small></span></label>${orderBreakdownMarkup(shippingEstimateFor(checkoutData))}${checkoutData.payment === 'pix' ? pixDemoMarkup() : ''}<div class="notice">Não informe número de cartão, senha bancária ou chave Pix. Esta demonstração não se conecta a um intermediador.</div><div class="step-actions"><button class="btn outline" type="button" id="back-shipping">Voltar</button><button class="btn" type="submit">Revisar pedido</button></div></form>`;
         document.getElementById('back-shipping').onclick = () => { checkoutStep = 1; renderCart(); };
+        const copyPixButton = document.getElementById('copy-pix-code');
+        if (copyPixButton) copyPixButton.onclick = copyPixDemoCode;
         document.querySelectorAll('#payment-form input[name="payment"]').forEach(input => input.onchange = () => { checkoutData.payment = input.value; renderCart(); });
         document.getElementById('payment-form').onsubmit = e => { e.preventDefault(); checkoutData.payment = new FormData(e.target).get('payment'); track('add_payment_info', { payment_type: checkoutData.payment }); checkoutStep = 3; renderCart(); };
     } else {
@@ -576,6 +655,85 @@ function toast(message) {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+const chatToggle = document.getElementById('chat-toggle');
+const chatPanel = document.getElementById('chat-panel');
+const chatInput = document.getElementById('chat-input');
+const chatMessages = document.getElementById('chat-messages');
+const chatWidget = document.getElementById('chat-widget');
+
+function updateChatLayout() {
+    const cookieBanner = document.getElementById('cookie');
+    if (window.innerWidth <= 640 && !cookieBanner.hidden) {
+        const bottom = Math.ceil(cookieBanner.getBoundingClientRect().height + 22);
+        chatWidget.style.setProperty('--chat-bottom', `${bottom}px`);
+        chatWidget.style.setProperty('--chat-panel-max-height', `${Math.max(120, window.innerHeight - bottom - 60)}px`);
+        return;
+    }
+    chatWidget.style.removeProperty('--chat-bottom');
+    chatWidget.style.removeProperty('--chat-panel-max-height');
+}
+
+function setChatOpen(isOpen) {
+    chatPanel.hidden = !isOpen;
+    chatToggle.setAttribute('aria-expanded', String(isOpen));
+    chatToggle.setAttribute('aria-label', isOpen ? 'Fechar atendimento automatizado' : 'Abrir atendimento automatizado');
+    if (isOpen) chatInput.focus();
+    else chatToggle.focus();
+}
+
+function chatReplyFor(question) {
+    const text = question.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (/\b(frete|entrega|cep|rural|urbana|cidade|estado)\b/.test(text)) {
+        return `O frete demonstrativo é R$ 12 na zona urbana ou R$ 20 na zona rural de Rio Branco, e R$ 30 em ${NEARBY_DELIVERY_CITIES.join(', ')}. Pedidos a partir de R$ 180 têm frete grátis. Não entregamos em outros estados.`;
+    }
+    if (/\b(pagamento|pix|cartao|carteira)\b/.test(text)) {
+        return 'Pix, cartão e carteira digital são apenas opções simuladas neste site. O Pix mostra um desconto ilustrativo de 5%. Não há cobrança; não informe dados bancários.';
+    }
+    if (/\b(cupom|desconto|promocao)\b/.test(text)) {
+        return 'O cupom demonstrativo AFETO10 aplica 10% de desconto. Na simulação, o pagamento por Pix oferece mais 5% sobre o valor após o cupom.';
+    }
+    if (/\b(pedido|compra|acompanhar|status)\b/.test(text)) {
+        return 'Os pedidos desta demonstração são apenas locais e simulados. Use “Acompanhar pedido” no menu para consultar os registros salvos neste navegador; não há entrega real.';
+    }
+    if (/\b(conta|cadastro|senha|email|endereco)\b/.test(text)) {
+        return 'A conta e o endereço são armazenados somente neste navegador. Esta demonstração não tem recuperação de senha nem sincronização; evite usar dados reais.';
+    }
+    if (/\b(troca|devolucao|cancelar|arrependimento)\b/.test(text)) {
+        return 'Esta loja é uma demonstração e não realiza vendas. A página de dúvidas descreve a política ilustrativa de trocas e devoluções; não há pedido real para cancelar.';
+    }
+    if (/\b(atendente|humano|contato|telefone)\b/.test(text)) {
+        return 'Não há atendimento humano ativo nesta demonstração; os contatos exibidos na página são fictícios. Este chat só responde a perguntas predefinidas.';
+    }
+    return 'Ainda não tenho uma resposta predefinida para isso. Posso ajudar com entrega, pagamento, cupom, conta ou pedidos. Consulte também as perguntas frequentes da página.';
+}
+
+function appendChatMessage(message, sender) {
+    const bubble = document.createElement('p');
+    bubble.className = `chat-message ${sender}`;
+    bubble.textContent = message;
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChatMessage(message) {
+    const question = String(message).trim();
+    if (!question) return;
+    appendChatMessage(question, 'visitor');
+    appendChatMessage(chatReplyFor(question), 'assistant');
+}
+
+chatToggle.onclick = () => setChatOpen(chatPanel.hidden);
+document.getElementById('chat-close').onclick = () => setChatOpen(false);
+document.getElementById('chat-form').onsubmit = event => {
+    event.preventDefault();
+    sendChatMessage(chatInput.value);
+    chatInput.value = '';
+    chatInput.focus();
+};
+document.querySelectorAll('[data-chat-question]').forEach(button => {
+    button.onclick = () => sendChatMessage(button.dataset.chatQuestion);
+});
+
 // ── Eventos globais ───────────────────────────────────────────────────────────
 
 document.querySelectorAll('.filter').forEach(b => b.onclick = () => {
@@ -588,6 +746,13 @@ document.querySelectorAll('.filter').forEach(b => b.onclick = () => {
 
 document.getElementById('search').oninput = renderProducts;
 document.getElementById('sort').onchange = renderProducts;
+document.getElementById('price-min').oninput = renderProducts;
+document.getElementById('price-max').oninput = renderProducts;
+document.getElementById('clear-price-filter').onclick = () => {
+    document.getElementById('price-min').value = '';
+    document.getElementById('price-max').value = '';
+    renderProducts();
+};
 
 document.getElementById('cart-open').onclick = () => {
     renderCart();
@@ -625,10 +790,14 @@ document.addEventListener('click', event => {
     }
 });
 document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeMobileMenu();
+    if (event.key === 'Escape') {
+        closeMobileMenu();
+        if (!chatPanel.hidden) setChatOpen(false);
+    }
 });
 window.addEventListener('resize', () => {
     if (window.innerWidth > 640) closeMobileMenu();
+    updateChatLayout();
 });
 
 const policies = {
@@ -666,14 +835,17 @@ function initAnalytics() {
 
 const consent = localStorage.getItem('doceafeto-analytics');
 if (!consent) document.getElementById('cookie').hidden = false;
+updateChatLayout();
 document.getElementById('accept-cookies').onclick = () => {
     localStorage.setItem('doceafeto-analytics', 'accepted');
     document.getElementById('cookie').hidden = true;
+    updateChatLayout();
     initAnalytics();
 };
 document.getElementById('reject-cookies').onclick = () => {
     localStorage.setItem('doceafeto-analytics', 'rejected');
     document.getElementById('cookie').hidden = true;
+    updateChatLayout();
 };
 if (consent === 'accepted') initAnalytics();
 
