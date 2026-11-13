@@ -51,8 +51,10 @@ function addToCart(id) {
 }
 
 let checkoutStep = 0;
-let checkoutData = { name: '', email: '', cep: '', street: '', number: '', complement: '', city: 'Rio Branco', state: 'AC', shipping: 'standard', payment: 'pix', coupon: '' };
+let checkoutData = { name: '', email: '', cep: '', street: '', number: '', complement: '', city: 'Rio Branco', state: 'AC', deliveryZone: 'urban', payment: 'pix', coupon: '' };
 let currentAccount = JSON.parse(localStorage.getItem('doceafeto-session') || 'null');
+const DELIVERY_RATES = { urban: 12, rural: 20, nearby: 30 };
+const NEARBY_DELIVERY_CITIES = ['Bujari', 'Senador Guiomard', 'Porto Acre', 'Plácido de Castro', 'Sena Madureira', 'Capixaba'];
 
 function authenticatedAccount() {
     try {
@@ -85,7 +87,52 @@ function cartEntries() { return Object.entries(cart).filter(([id, q]) => product
 
 function cartSubtotal() { return cartEntries().reduce((sum, [id, q]) => sum + products.find(p => p.id === id).price * q, 0); }
 
-function shippingCost() { if (cartSubtotal() >= 180 && checkoutData.shipping === 'standard') return 0; return checkoutData.shipping === 'express' ? 20 : 12; }
+function normalizeCity(city) {
+    return String(city).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+
+function formatCep(cep) {
+    const digits = String(cep || '').replace(/\D/g, '');
+    return digits.length === 8 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : String(cep || '');
+}
+
+function deliveryArea(city, state, zone, cep) {
+    if (String(state).trim().toUpperCase() !== 'AC') return null;
+    if (!String(cep).replace(/\D/g, '').startsWith('699')) return null;
+    const normalizedCity = normalizeCity(city);
+    if (normalizedCity === 'rio branco') {
+        return zone === 'urban' || zone === 'rural' ? zone : null;
+    }
+    return NEARBY_DELIVERY_CITIES.some(name => normalizeCity(name) === normalizedCity) ? 'nearby' : null;
+}
+
+function deliveryAreaLabel(area, city = '') {
+    if (area === 'nearby') return `${city} · cidade próxima`;
+    return { urban: 'Rio Branco · zona urbana', rural: 'Rio Branco · zona rural' }[area];
+}
+
+function shippingCost() {
+    const area = deliveryArea(checkoutData.city, checkoutData.state, checkoutData.deliveryZone, checkoutData.cep);
+    if (!area) throw new Error('Não há uma tarifa de frete disponível para este endereço.');
+    return cartSubtotal() >= 180 ? 0 : DELIVERY_RATES[area];
+}
+
+function shippingQuoteText(cep, city, state, zone) {
+    const digits = String(cep).replace(/\D/g, '');
+    if (digits.length !== 8) return 'Digite um CEP válido com 8 números.';
+    if (String(state).trim().toUpperCase() === 'AC' && !digits.startsWith('699')) {
+        return 'Este CEP não pertence ao Acre. Não realizamos entregas para outros estados.';
+    }
+    const area = deliveryArea(city, state, zone, digits);
+    if (!area) {
+        return String(state).trim().toUpperCase() !== 'AC'
+            ? 'Não realizamos entregas para outros estados.'
+            : `Ainda não atendemos essa cidade. Entregamos em Rio Branco e nas cidades próximas: ${NEARBY_DELIVERY_CITIES.join(', ')}.`;
+    }
+    const price = cartSubtotal() >= 180 ? 0 : DELIVERY_RATES[area];
+    const formattedCep = `${digits.slice(0, 5)}-${digits.slice(5)}`;
+    return `CEP ${formattedCep} · ${deliveryAreaLabel(area, city)}: ${price === 0 ? 'frete grátis' : brl(price)}${cartSubtotal() >= 180 ? ' (pedido acima de R$ 180,00)' : ''}.`;
+}
 
 function couponDiscount() { return checkoutData.coupon === 'AFETO10' ? cartSubtotal() * .10 : 0; }
 
@@ -165,19 +212,94 @@ function renderCart() {
         document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const id = b.dataset.qty; cart[id] = (cart[id] || 0) + Number(b.dataset.delta); if (cart[id] <= 0) delete cart[id]; saveCart(); });
         document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { delete cart[b.dataset.remove]; saveCart(); });
         document.getElementById('apply-coupon').onclick = () => { const code = document.getElementById('coupon-code').value.trim().toUpperCase(); checkoutData.coupon = code === 'AFETO10' ? code : ''; if (checkoutData.coupon) track('coupon_applied', { coupon: checkoutData.coupon }); renderCart(); document.getElementById('coupon-message').textContent = checkoutData.coupon ? 'Cupom aplicado: 10% de desconto.' : 'Cupom inválido. Confira o código e tente novamente.'; };
-        document.getElementById('start-checkout').onclick = () => { if (!requireAccountForCheckout()) return; checkoutData.name = currentAccount.name || ''; checkoutData.email = currentAccount.email || ''; Object.assign(checkoutData, currentAccount.address || {}); checkoutStep = 1; renderCart(); track('begin_checkout', { currency: 'BRL', value: subtotal, items: entries.map(([id, q]) => ({ item_id: id, quantity: q })) }); };
+        document.getElementById('start-checkout').onclick = () => { if (!requireAccountForCheckout()) return; checkoutData.name = currentAccount.name || ''; checkoutData.email = currentAccount.email || ''; Object.assign(checkoutData, currentAccount.address || {}); if (!['urban', 'rural'].includes(checkoutData.deliveryZone)) checkoutData.deliveryZone = 'urban'; checkoutStep = 1; renderCart(); track('begin_checkout', { currency: 'BRL', value: subtotal, items: entries.map(([id, q]) => ({ item_id: id, quantity: q })) }); };
     } else if (checkoutStep === 1) {
-        el.innerHTML = `${checkoutProgress()}<form id="shipping-form" class="checkout-form"><h3>Endereço de entrega</h3><p class="muted-text">Olá, ${escapeHtml(currentAccount.name)}. Confira o endereço da sua conta.</p><label>Nome completo<input name="name" autocomplete="name" required readonly value="${escapeHtml(currentAccount.name)}"></label><label>E-mail<input name="email" type="email" autocomplete="email" required readonly value="${escapeHtml(currentAccount.email)}"></label><div class="form-row"><label>CEP<input name="cep" inputmode="numeric" maxlength="9" placeholder="69900-000" required value="${escapeHtml(checkoutData.cep)}"></label><button class="btn outline small align-end" type="button" id="lookup-cep">Consultar CEP</button></div><label>Rua / Avenida<input name="street" autocomplete="street-address" required value="${escapeHtml(checkoutData.street)}"></label><div class="form-row"><label>Número<input name="number" required value="${escapeHtml(checkoutData.number)}"></label><label>Complemento<input name="complement" value="${escapeHtml(checkoutData.complement)}"></label></div><div class="form-row"><label>Cidade<input name="city" required value="${escapeHtml(checkoutData.city)}"></label><label>UF<input name="state" maxlength="2" required value="${escapeHtml(checkoutData.state)}"></label></div><p class="shipping-result" id="shipping-quote">${checkoutData.cep.replace(/\D/g, '').length === 8 ? 'Frete calculado para o CEP informado.' : 'Informe o CEP para consultar as opções de entrega.'}</p><fieldset class="shipping-options"><legend>Escolha a entrega</legend><label><input type="radio" name="shipping" value="standard" ${checkoutData.shipping === 'standard' ? 'checked' : ''}> Padrão · R$ 12,00 · até 2 dias úteis${cartSubtotal() >= 180 ? ' · grátis' : ''}</label><label><input type="radio" name="shipping" value="express" ${checkoutData.shipping === 'express' ? 'checked' : ''}> Expressa · R$ 20,00 · 1 dia útil</label></fieldset><div class="step-actions"><button class="btn outline" type="button" id="back-cart">Voltar ao carrinho</button><button class="btn" type="submit">Escolher pagamento</button></div></form>`;
-        document.getElementById('lookup-cep').onclick = () => { const input = document.querySelector('[name="cep"]'), digits = input.value.replace(/\D/g, ''); document.getElementById('shipping-quote').textContent = digits.length === 8 ? 'Entrega para ' + digits.slice(0, 5) + '-' + digits.slice(5) + ': padrão R$ 12,00 (até 2 dias úteis) ou expressa R$ 20,00 (1 dia útil). Acima de R$ 180, frete padrão grátis.' : 'Digite um CEP válido com 8 números.'; if (digits.length === 8) { checkoutData.cep = digits; track('calculate_shipping', { shipping_tier: 'standard_and_express' }); } };
+        const showRioBrancoZone = normalizeCity(checkoutData.city) === 'rio branco' && String(checkoutData.state).trim().toUpperCase() === 'AC';
+        const currentCep = String(checkoutData.cep || '');
+        const initialQuote = currentCep.replace(/\D/g, '').length === 8
+            ? shippingQuoteText(currentCep, checkoutData.city, checkoutData.state, checkoutData.deliveryZone)
+            : 'Informe o CEP, a cidade e o estado para consultar a estimativa.';
+        el.innerHTML = `${checkoutProgress()}<form id="shipping-form" class="checkout-form">
+            <h3>Endereço de entrega</h3>
+            <p class="muted-text">Olá, ${escapeHtml(currentAccount.name)}. Confira o endereço da sua conta.</p>
+            <label>Nome completo<input name="name" autocomplete="name" required readonly value="${escapeHtml(currentAccount.name)}"></label>
+            <label>E-mail<input name="email" type="email" autocomplete="email" required readonly value="${escapeHtml(currentAccount.email)}"></label>
+            <div class="form-row">
+                <label>CEP<input name="cep" inputmode="numeric" maxlength="9" placeholder="69900-000" required value="${escapeHtml(currentCep)}"></label>
+                <button class="btn outline small align-end" type="button" id="lookup-cep">Consultar CEP</button>
+            </div>
+            <label>Rua / Avenida<input name="street" autocomplete="street-address" required value="${escapeHtml(checkoutData.street)}"></label>
+            <div class="form-row">
+                <label>Número<input name="number" required value="${escapeHtml(checkoutData.number)}"></label>
+                <label>Complemento<input name="complement" value="${escapeHtml(checkoutData.complement)}"></label>
+            </div>
+            <div class="form-row">
+                <label>Cidade<input name="city" required value="${escapeHtml(checkoutData.city)}"></label>
+                <label>UF<input name="state" maxlength="2" required value="${escapeHtml(checkoutData.state)}"></label>
+            </div>
+            <label id="rio-branco-zone-field" ${showRioBrancoZone ? '' : 'hidden'}>Região de Rio Branco
+                <select name="deliveryZone">
+                    <option value="urban" ${checkoutData.deliveryZone === 'urban' ? 'selected' : ''}>Urbana · R$ 12,00</option>
+                    <option value="rural" ${checkoutData.deliveryZone === 'rural' ? 'selected' : ''}>Rural · R$ 20,00</option>
+                </select>
+            </label>
+            <p class="shipping-result" id="shipping-quote" role="status" aria-live="polite">${escapeHtml(initialQuote)}</p>
+            <p class="muted-text">Cidades próximas: ${NEARBY_DELIVERY_CITIES.join(', ')} · R$ 30,00. Frete grátis em pedidos a partir de R$ 180,00.</p>
+            <div class="step-actions">
+                <button class="btn outline" type="button" id="back-cart">Voltar ao carrinho</button>
+                <button class="btn" type="submit">Escolher pagamento</button>
+            </div>
+        </form>`;
+        const shippingForm = document.getElementById('shipping-form');
+        const shippingQuote = document.getElementById('shipping-quote');
+        const zoneField = document.getElementById('rio-branco-zone-field');
+        const refreshShippingPrompt = () => {
+            const isRioBranco = normalizeCity(shippingForm.elements.city.value) === 'rio branco';
+            const isAcre = shippingForm.elements.state.value.trim().toUpperCase() === 'AC';
+            zoneField.hidden = !isRioBranco || !isAcre;
+            shippingQuote.classList.remove('unavailable');
+            shippingQuote.textContent = 'Consulte o CEP novamente para atualizar o frete estimado.';
+        };
+        ['cep', 'city', 'state'].forEach(name => shippingForm.elements[name].addEventListener('input', refreshShippingPrompt));
+        shippingForm.elements.deliveryZone.addEventListener('change', refreshShippingPrompt);
+        document.getElementById('lookup-cep').onclick = () => {
+            const data = Object.fromEntries(new FormData(shippingForm));
+            const message = shippingQuoteText(data.cep, data.city, data.state, data.deliveryZone);
+            const area = deliveryArea(data.city, data.state, data.deliveryZone, data.cep);
+            shippingQuote.textContent = message;
+            shippingQuote.classList.toggle('unavailable', !area && String(data.cep).replace(/\D/g, '').length === 8);
+            if (area && String(data.cep).replace(/\D/g, '').length === 8) {
+                checkoutData.cep = String(data.cep).replace(/\D/g, '');
+                track('calculate_shipping', { shipping_tier: area });
+            }
+        };
         document.getElementById('back-cart').onclick = () => { checkoutStep = 0; renderCart(); };
-        document.getElementById('shipping-form').onsubmit = e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); if (data.cep.replace(/\D/g, '').length !== 8) { toast('Informe um CEP válido para continuar.'); return; } checkoutData = { ...checkoutData, ...data, cep: data.cep.replace(/\D/g, '') }; track('add_shipping_info', { shipping_tier: checkoutData.shipping }); checkoutStep = 2; renderCart(); };
+        shippingForm.onsubmit = e => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(shippingForm));
+            const cep = String(data.cep).replace(/\D/g, '');
+            if (cep.length !== 8) { toast('Informe um CEP válido para continuar.'); return; }
+            const area = deliveryArea(data.city, data.state, data.deliveryZone, cep);
+            if (!area) {
+                toast(String(data.state).trim().toUpperCase() !== 'AC'
+                    ? 'Não realizamos entregas para outros estados.'
+                    : !cep.startsWith('699')
+                        ? 'O CEP informado não pertence ao Acre; não realizamos entregas para outros estados.'
+                        : 'No momento, entregamos somente em Rio Branco e nas cidades próximas informadas.');
+                return;
+            }
+            checkoutData = { ...checkoutData, ...data, cep, deliveryZone: data.deliveryZone || 'urban' };
+            track('add_shipping_info', { shipping_tier: area });
+            checkoutStep = 2;
+            renderCart();
+        };
     } else if (checkoutStep === 2) {
         el.innerHTML = `${checkoutProgress()}<form id="payment-form" class="checkout-form"><h3>Forma de pagamento</h3><label class="payment-option"><input type="radio" name="payment" value="pix" ${checkoutData.payment === 'pix' ? 'checked' : ''}><span><b>Pix</b><small>Simulação · 5% de desconto</small></span></label><label class="payment-option"><input type="radio" name="payment" value="card" ${checkoutData.payment === 'card' ? 'checked' : ''}><span><b>Cartão de crédito</b><small>Simulação em ambiente de teste · sem informar número do cartão</small></span></label><label class="payment-option"><input type="radio" name="payment" value="wallet" ${checkoutData.payment === 'wallet' ? 'checked' : ''}><span><b>Carteira digital</b><small>Simulação · nenhuma carteira será acessada</small></span></label>${checkoutData.payment === 'pix' ? pixDemoMarkup() : ''}<div class="notice">Não informe número de cartão, senha bancária ou chave Pix. Esta demonstração não se conecta a um intermediador.</div><div class="step-actions"><button class="btn outline" type="button" id="back-shipping">Voltar</button><button class="btn" type="submit">Revisar pedido</button></div></form>`;
         document.getElementById('back-shipping').onclick = () => { checkoutStep = 1; renderCart(); };
         document.querySelectorAll('#payment-form input[name="payment"]').forEach(input => input.onchange = () => { checkoutData.payment = input.value; renderCart(); });
         document.getElementById('payment-form').onsubmit = e => { e.preventDefault(); checkoutData.payment = new FormData(e.target).get('payment'); track('add_payment_info', { payment_type: checkoutData.payment }); checkoutStep = 3; renderCart(); };
     } else {
-        const delivery = checkoutData.shipping === 'express' ? 'Expressa · até 1 dia útil' : 'Padrão · até 2 dias úteis';
+        const delivery = deliveryAreaLabel(deliveryArea(checkoutData.city, checkoutData.state, checkoutData.deliveryZone, checkoutData.cep), checkoutData.city);
         const paymentLabel = { pix: 'Pix (simulado)', card: 'Cartão (sandbox demonstrativo)', wallet: 'Carteira digital (simulada)' }[checkoutData.payment];
         el.innerHTML = `${checkoutProgress()}<div class="review-card"><h3>Revise seu pedido</h3><p><b>Entrega para</b><br>${escapeHtml(checkoutData.name)} · ${escapeHtml(checkoutData.email)}<br>${escapeHtml(checkoutData.street)}, ${escapeHtml(checkoutData.number)} ${escapeHtml(checkoutData.complement)}<br>${escapeHtml(checkoutData.city)} – ${escapeHtml(checkoutData.state)}, CEP ${escapeHtml(checkoutData.cep)}</p><p><b>Frete:</b> ${delivery} · ${shippingCost() === 0 ? 'grátis' : brl(shippingCost())}<br><b>Pagamento:</b> ${paymentLabel}</p>${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="summary-line"><span>${q} × ${p.name}</span><span>${brl(p.price * q)}</span></div>`; }).join('')}<div class="summary-line"><span>Subtotal</span><span>${brl(subtotal)}</span></div>${checkoutData.coupon === 'AFETO10' ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(couponDiscount())}</span></div>` : ''}${checkoutData.payment === 'pix' ? `<div class="summary-line"><span>Desconto Pix (5%)</span><span>− ${brl(paymentDiscount())}</span></div>` : ''}<div class="summary-line"><span>Frete</span><span>${shippingCost() === 0 ? 'Grátis' : brl(shippingCost())}</span></div><div class="cart-total"><span>Total demonstrativo</span><span>${brl(orderTotal())}</span></div></div><label class="terms-check"><input type="checkbox" id="accept-order-terms"> Confirmo os dados e entendo que este pedido é apenas uma simulação.</label><div class="step-actions"><button class="btn outline" id="back-payment">Voltar</button><button class="btn" id="confirm-order">Confirmar pedido</button></div>`;
         document.getElementById('back-payment').onclick = () => { checkoutStep = 2; renderCart(); };
@@ -209,7 +331,7 @@ function completeOrder(entries) {
     const orders = JSON.parse(localStorage.getItem('doceafeto-orders') || '[]');
     orders.unshift(order);
     localStorage.setItem('doceafeto-orders', JSON.stringify(orders));
-    currentAccount.address = { cep: checkoutData.cep, street: checkoutData.street, number: checkoutData.number, complement: checkoutData.complement, city: checkoutData.city, state: checkoutData.state };
+    currentAccount.address = { cep: checkoutData.cep, street: checkoutData.street, number: checkoutData.number, complement: checkoutData.complement, city: checkoutData.city, state: checkoutData.state, deliveryZone: checkoutData.deliveryZone };
     const users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}');
     const user = users[currentAccount.email.toLowerCase()];
     user.address = currentAccount.address;
@@ -306,6 +428,12 @@ function renderAccount(mode = 'login') {
     const box = document.getElementById('modal-content');
     if (currentAccount) {
         const orders = JSON.parse(localStorage.getItem('doceafeto-orders') || '[]').filter(o => o.customerEmail === currentAccount.email);
+        const address = currentAccount.address || {};
+        const addressZone = address.deliveryZone === 'rural' ? 'rural' : 'urban';
+        const showAddressZone = normalizeCity(address.city) === 'rio branco' && String(address.state).trim().toUpperCase() === 'AC';
+        const addressSummary = address.street
+            ? `${escapeHtml(address.street)}, ${escapeHtml(address.number)}${address.complement ? ` · ${escapeHtml(address.complement)}` : ''}<br>${escapeHtml(address.city)} – ${escapeHtml(address.state)}, CEP ${escapeHtml(formatCep(address.cep))}${showAddressZone ? ` · Zona ${addressZone === 'rural' ? 'rural' : 'urbana'}` : ''}`
+            : 'Nenhum endereço salvo. Adicione um endereço para agilizar suas próximas compras.';
         box.innerHTML = `<span class="eyebrow">Área do cliente · demonstração local</span><h2>Olá, ${escapeHtml(currentAccount.name)}</h2><p>${escapeHtml(currentAccount.email)}</p>
         <div class="account-panel"><h3>Seus pedidos</h3>
         ${orders.length
@@ -313,10 +441,35 @@ function renderAccount(mode = 'login') {
                <button class="btn outline small" id="view-all-orders" style="margin-top:10px">Ver todos e acompanhar</button>`
             : '<p class="muted-text">Seus pedidos feitos neste navegador aparecerão aqui.</p>'
         }</div>
-        <div class="account-panel"><h3>Endereço salvo</h3><p>${currentAccount.address?.street ? `${escapeHtml(currentAccount.address.street)}, ${escapeHtml(currentAccount.address.number)} · CEP ${escapeHtml(currentAccount.address.cep)}` : 'O endereço será salvo após seu primeiro checkout.'}</p></div>
+        <div class="account-panel"><h3>Endereço salvo</h3><p>${addressSummary}</p>
+        <details class="address-editor"><summary>Editar endereço</summary>
+            <form id="address-form" class="checkout-form">
+                <div class="form-row">
+                    <label>CEP<input name="cep" inputmode="numeric" maxlength="9" autocomplete="postal-code" placeholder="69900-000" required value="${escapeHtml(formatCep(address.cep))}"></label>
+                    <label>Rua / Avenida<input name="street" autocomplete="street-address" required value="${escapeHtml(address.street || '')}"></label>
+                </div>
+                <div class="form-row">
+                    <label>Número<input name="number" required value="${escapeHtml(address.number || '')}"></label>
+                    <label>Complemento<input name="complement" value="${escapeHtml(address.complement || '')}"></label>
+                </div>
+                <div class="form-row">
+                    <label>Cidade<input name="city" autocomplete="address-level2" required value="${escapeHtml(address.city || '')}"></label>
+                    <label>UF<input name="state" autocomplete="address-level1" maxlength="2" required value="${escapeHtml(address.state || '')}"></label>
+                </div>
+                <label id="account-zone-field" ${showAddressZone ? '' : 'hidden'}>Região de Rio Branco
+                    <select name="deliveryZone">
+                        <option value="urban" ${addressZone === 'urban' ? 'selected' : ''}>Urbana · R$ 12,00</option>
+                        <option value="rural" ${addressZone === 'rural' ? 'selected' : ''}>Rural · R$ 20,00</option>
+                    </select>
+                </label>
+                <p id="address-message" class="form-error" aria-live="polite"></p>
+                <button class="btn outline small" type="submit">Salvar endereço</button>
+            </form>
+        </details>
+        </div>
         <div class="account-panel"><h3>Dados da conta</h3>
-        <form id="profile-form" class="checkout-form"><label>Nome<input name="name" required value="${escapeHtml(currentAccount.name)}"></label><label>E-mail<input name="email" type="email" required value="${escapeHtml(currentAccount.email)}"></label><button class="btn outline small">Salvar dados</button><p id="profile-message" class="form-error"></p></form>
-        <form id="password-form" class="checkout-form"><h4>Alterar senha</h4><input name="current" type="password" placeholder="Senha atual" required><input name="next" type="password" placeholder="Nova senha (8+ caracteres)" minlength="8" required><input name="confirm" type="password" placeholder="Confirme a nova senha" required><button class="btn outline small">Atualizar senha</button><p id="password-message" class="form-error"></p></form>
+        <form id="profile-form" class="checkout-form"><label>Nome<input name="name" autocomplete="name" minlength="2" required value="${escapeHtml(currentAccount.name)}"></label><label>E-mail<input name="email" type="email" autocomplete="email" required value="${escapeHtml(currentAccount.email)}"></label><button class="btn outline small" type="submit">Salvar dados</button><p id="profile-message" class="form-error" aria-live="polite"></p></form>
+        <form id="password-form" class="checkout-form"><h4>Alterar senha</h4><label>Senha atual<input name="current" type="password" autocomplete="current-password" required></label><label>Nova senha<input name="next" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" minlength="8" required></label><label>Confirmar nova senha<input name="confirm" type="password" autocomplete="new-password" required></label><button class="btn outline small" type="submit">Atualizar senha</button><p id="password-message" class="form-error" aria-live="polite"></p></form>
         </div>
         <div class="step-actions"><button class="btn outline" id="account-logout">Sair da conta</button><button class="btn" id="account-close">Fechar</button></div>`;
 
@@ -326,8 +479,11 @@ function renderAccount(mode = 'login') {
         if (viewAll) viewAll.onclick = () => openOrderTracker();
         document.getElementById('profile-form').onsubmit = e => {
             e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target)), users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}'), email = data.email.trim().toLowerCase(), oldEmail = currentAccount.email.toLowerCase(), user = users[oldEmail];
-            if (email !== oldEmail && users[email]) { document.getElementById('profile-message').textContent = 'Este e-mail já está em uso.'; return; }
+            const data = Object.fromEntries(new FormData(e.target)), users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}'), message = document.getElementById('profile-message'), email = data.email.trim().toLowerCase(), oldEmail = currentAccount.email.toLowerCase(), user = users[oldEmail];
+            message.textContent = '';
+            if (data.name.trim().length < 2) { message.textContent = 'Informe um nome com pelo menos 2 caracteres.'; return; }
+            if (!user) { message.textContent = 'Não foi possível localizar esta conta neste navegador.'; return; }
+            if (email !== oldEmail && users[email]) { message.textContent = 'Este e-mail já está em uso.'; return; }
             delete users[oldEmail]; user.name = data.name.trim(); user.email = email; users[email] = user;
             localStorage.setItem('doceafeto-users', JSON.stringify(users));
             if (email !== oldEmail) { const ords = JSON.parse(localStorage.getItem('doceafeto-orders') || '[]'); ords.forEach(order => { if (order.customerEmail === oldEmail) order.customerEmail = email; }); localStorage.setItem('doceafeto-orders', JSON.stringify(ords)); }
@@ -335,10 +491,50 @@ function renderAccount(mode = 'login') {
             localStorage.setItem('doceafeto-session', JSON.stringify(currentAccount));
             renderAccount('profile'); toast('Dados da conta atualizados.');
         };
+        const addressForm = document.getElementById('address-form');
+        const addressZoneField = document.getElementById('account-zone-field');
+        const updateAddressZoneVisibility = () => {
+            const isRioBranco = normalizeCity(addressForm.elements.city.value) === 'rio branco';
+            const isAcre = addressForm.elements.state.value.trim().toUpperCase() === 'AC';
+            addressZoneField.hidden = !isRioBranco || !isAcre;
+        };
+        addressForm.elements.city.addEventListener('input', updateAddressZoneVisibility);
+        addressForm.elements.state.addEventListener('input', updateAddressZoneVisibility);
+        addressForm.onsubmit = e => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(addressForm));
+            const message = document.getElementById('address-message');
+            const cep = String(data.cep).replace(/\D/g, '');
+            message.textContent = '';
+            if (cep.length !== 8) { message.textContent = 'Informe um CEP válido com 8 números.'; return; }
+            if (!data.street.trim() || !data.number.trim() || !data.city.trim() || data.state.trim().length !== 2) {
+                message.textContent = 'Preencha rua, número, cidade e UF para salvar o endereço.';
+                return;
+            }
+            const users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}');
+            const user = users[currentAccount.email.toLowerCase()];
+            if (!user) { message.textContent = 'Não foi possível localizar esta conta neste navegador.'; return; }
+            const savedAddress = {
+                cep,
+                street: data.street.trim(),
+                number: data.number.trim(),
+                complement: data.complement.trim(),
+                city: data.city.trim(),
+                state: data.state.trim().toUpperCase(),
+                deliveryZone: data.deliveryZone === 'rural' ? 'rural' : 'urban'
+            };
+            user.address = savedAddress;
+            currentAccount.address = savedAddress;
+            localStorage.setItem('doceafeto-users', JSON.stringify(users));
+            localStorage.setItem('doceafeto-session', JSON.stringify(currentAccount));
+            renderAccount('profile');
+            toast('Endereço salvo neste navegador.');
+        };
         document.getElementById('password-form').onsubmit = async e => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(e.target)), users = JSON.parse(localStorage.getItem('doceafeto-users') || '{}'), user = users[currentAccount.email.toLowerCase()], message = document.getElementById('password-message');
             if (data.next !== data.confirm) { message.textContent = 'As novas senhas não conferem.'; return; }
+            if (!user) { message.textContent = 'Não foi possível localizar esta conta neste navegador.'; return; }
             if (user.passwordHash !== await passwordDigest(data.current, user.passwordHash.split(':')[0])) { message.textContent = 'A senha atual está incorreta.'; return; }
             user.passwordHash = await passwordDigest(data.next);
             localStorage.setItem('doceafeto-users', JSON.stringify(users));

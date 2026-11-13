@@ -15,10 +15,10 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 
 - Catálogo responsivo de geleias, compotas e kits, com busca, filtros e ordenação por preço.
 - Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos, cupom demonstrativo `AFETO10` e subtotal atualizado.
-- Consulta demonstrativa de frete por CEP (tabela simulada: R$ 12 e estimativa de 2 dias úteis em Rio Branco).
-- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, opções de frete, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Pix mostra um QR visual e um código textual não pagáveis. Frete grátis padrão a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento ou e-mail é processado; não informar dados de pagamento reais.
+- Consulta demonstrativa de frete por CEP: R$ 12 na zona urbana de Rio Branco, R$ 20 na zona rural e R$ 30 em Bujari, Senador Guiomard, Porto Acre, Plácido de Castro, Sena Madureira e Capixaba. O cliente seleciona a zona urbana ou rural em Rio Branco; o checkout valida CEPs do Acre (faixa 699) e não permite entregas em outros estados ou cidades fora da área atendida.
+- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, frete por região, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Pix mostra um QR visual e um código textual não pagáveis. Frete grátis a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento ou e-mail é processado; não informar dados de pagamento reais.
 - Após a confirmação, é exibida uma prévia local de NF-e de produtos e um exemplo separado de NFS-e, ambos sem validade fiscal e sem transmissão à SEFAZ ou prefeitura.
-- Criação de conta, login, edição de nome/e-mail, alteração de senha, endereço salvo e histórico de pedidos neste navegador. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
+- Criação de conta e login, edição de nome/e-mail, alteração de senha e edição do endereço completo (CEP, rua, número, complemento, cidade/UF e zona urbana/rural) neste navegador, além do histórico de pedidos. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
 - História da marca, seção de dicas, banner de indicação demonstrativo, FAQ, atendimento e políticas no rodapé.
 - CTA de criação de conta na oferta; CNPJ, contatos e links de redes sociais são fictícios e identificados como tal na página.
 - Aviso de consentimento: analytics só é carregado depois do aceite; recusar mantém o carrinho e recursos essenciais.
@@ -39,7 +39,7 @@ O fluxo financeiro previsto é criar uma preferência de pagamento no gateway e 
 
 O e-CRM inclui conta demonstrativa, dados de perfil, endereço e histórico de pedidos guardados localmente, além de canais de contato e formulário de captação. Cadastro, sessão e pedidos só existem neste navegador; não há recuperação de senha, autenticação de servidor, sincronização, chatbot ou e-mails de confirmação/pós-venda. Para uma loja real, mover identidade e dados para backend seguro e integrar provedores de identidade e comunicação.
 
-Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar API de cotação/rastreamento e validar CEP. A política exibida informa o direito de arrependimento de 7 dias para compras online, conforme legislação aplicável; implementar atendimento e processo real antes de vender.
+Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar API de cotação/rastreamento e validar CEP/endereço. A política exibida informa o direito de arrependimento de 7 dias para compras online, conforme legislação aplicável; implementar atendimento e processo real antes de vender.
 
 ## Google Analytics 4 e métricas
 
