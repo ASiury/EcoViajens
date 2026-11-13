@@ -21,12 +21,13 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 - Criação de conta e login, edição de nome/e-mail, alteração de senha e edição do endereço completo (CEP, rua, número, complemento, cidade/UF e zona urbana/rural) neste navegador, além do histórico de pedidos. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
 - História da marca, seção de dicas, banner de indicação demonstrativo, FAQ, atendimento e políticas no rodapé.
 - Widget de atendimento automático com respostas predefinidas sobre frete, pagamentos, cupons, conta e pedidos. A conversa funciona apenas na página, não é salva nem enviada a um atendente.
-- CTA de criação de conta na oferta; CNPJ, contatos e links de redes sociais são fictícios e identificados como tal na página.
+- Links para compartilhar a página pelo WhatsApp, Facebook e X; imagens abaixo da primeira dobra carregam sob demanda.
+- CTA de criação de conta na oferta; CNPJ e contatos comerciais são fictícios e identificados como tal na página.
 - Aviso de consentimento: analytics só é carregado depois do aceite; recusar mantém o carrinho e recursos essenciais.
 
 ## Marketing digital e 4Ps
 
-- **Atração/SEO:** título, descrição, imagem Open Graph, URL canonical, `robots.txt`, `sitemap.xml`, conteúdo textual indexável, navegação por seções, dicas e catálogo. Campanhas de e-mail, redes sociais e mídia paga são canais planejados, não integrações de envio ativas.
+- **Atração/SEO:** título, descrição, imagens Open Graph/Twitter Card, URL canonical, links de compartilhamento, `robots.txt`, `sitemap.xml`, conteúdo textual indexável, navegação por seções, dicas e catálogo. Campanhas de e-mail, redes sociais e mídia paga são canais planejados, não integrações de envio ativas.
 - **Produto:** catálogo com descrição, categoria, peso do pote e campos preparados para suas imagens.
 - **Preço:** preço por pote/kit e desconto ilustrativo de 5% no Pix.
 - **Praça:** site responsivo previsto para acesso 24/7 em celular e desktop; operação comercial depende de hospedagem e logística reais.
@@ -52,4 +53,4 @@ Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar 
 
 ## Privacidade, conformidade e limites
 
-O site exibe política de privacidade/cookies, canal de atendimento, informação de entrega, política de trocas/devoluções e referência ao direito de arrependimento. CNPJ, contatos e links de redes sociais são fictícios; Google Fonts e Google Analytics (após consentimento) são serviços externos reais. Antes de uma operação real, substitua os dados fictícios, publique uma política revisada pelo responsável, implemente controles LGPD, segurança de backend, confirmação de pedido, pagamento seguro, emissão fiscal e logística. Consentimento analítico é guardado no armazenamento local do navegador.
+O site exibe política de privacidade/cookies, canal de atendimento, informação de entrega, política de trocas/devoluções e referência ao direito de arrependimento. CNPJ e contatos comerciais são fictícios; links de compartilhamento, Google Fonts e Google Analytics (após consentimento) apontam para serviços externos reais. Antes de uma operação real, substitua os dados fictícios, publique uma política revisada pelo responsável, implemente controles LGPD, segurança de backend, confirmação de pedido, pagamento seguro, emissão fiscal e logística. Consentimento analítico é guardado no armazenamento local do navegador.

@@ -1,11 +1,11 @@
 const GA_ID = 'G-BMBTCY4ZDR';
 
 const products = [
-    { id: 'geleia-cupuacu', name: 'Geleia de cupuaçu', category: 'geleias', desc: 'Azedinho perfumado e sabor marcante. Pote de 250 g.', price: 24, badge: 'Da estação', img: 'imgs/geleia-cupuacu.png' },
-    { id: 'compota-buriti', name: 'Compota de buriti', category: 'compotas', desc: 'Doce macio de fruta amazônica. Pote de 250 g.', price: 28, badge: 'Receita da casa', img: 'imgs/compota-buriti.png' },
-    { id: 'geleia-tapereba', name: 'Geleia de taperebá', category: 'geleias', desc: 'Equilíbrio delicioso entre o doce e o azedinho. Pote de 250 g.', price: 24, badge: 'Mais querida', img: 'imgs/geleia-tapereba.png' },
-    { id: 'doce-mamao', name: 'Doce de mamão cristalizado', category: 'compotas', desc: 'Sabor exótico e apaixonante. Pote de 250g', price: 22, badge: 'O tradicional', img: 'imgs/doce-mamao.png' },
-    { id: 'kit-regional', name: 'Kit sabores da região', category: 'kits', desc: 'Três potes em sabores sazonais para provar e presentear.', price: 68, badge: 'Para presentear', img: 'imgs/kit-sabores-regionais.png' }
+    { id: 'geleia-cupuacu', name: 'Geleia de cupuaçu', category: 'geleias', desc: 'Azedinho perfumado e sabor marcante. Pote de 250 g.', price: 24, badge: 'Da estação', img: 'imgs/geleia-cupuacu.webp' },
+    { id: 'compota-buriti', name: 'Compota de buriti', category: 'compotas', desc: 'Doce macio de fruta amazônica. Pote de 250 g.', price: 28, badge: 'Receita da casa', img: 'imgs/compota-buriti.webp' },
+    { id: 'geleia-tapereba', name: 'Geleia de taperebá', category: 'geleias', desc: 'Equilíbrio delicioso entre o doce e o azedinho. Pote de 250 g.', price: 24, badge: 'Mais querida', img: 'imgs/geleia-tapereba.webp' },
+    { id: 'doce-mamao', name: 'Doce de mamão cristalizado', category: 'compotas', desc: 'Sabor exótico e apaixonante. Pote de 250g', price: 22, badge: 'O tradicional', img: 'imgs/doce-mamao.webp' },
+    { id: 'kit-regional', name: 'Kit sabores da região', category: 'kits', desc: 'Três potes em sabores sazonais para provar e presentear.', price: 68, badge: 'Para presentear', img: 'imgs/kit-sabores-regionais.webp' }
 ];
 
 const brl = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -276,7 +276,7 @@ function renderCart() {
     const subtotal = cartSubtotal();
     if (checkoutStep === 0) {
         el.innerHTML = `${checkoutProgress()}
-            <div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'" fetchpriority=high><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div>
+            <div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" loading="lazy" onerror="this.style.display='none'"><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div>
             <div class="coupon-box">
                 <label for="coupon-code">Cupom de primeira compra</label>
                 <div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div>
