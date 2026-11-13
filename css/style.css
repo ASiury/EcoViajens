@@ -109,6 +109,33 @@ a {
     gap: 12px
 }
 
+.nav-menu-toggle {
+    display: none;
+    width: 40px;
+    height: 40px;
+    padding: 9px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer
+}
+
+.nav-menu-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    margin: 4px 0;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform .2s, opacity .2s
+}
+
+.nav-menu-toggle:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px
+}
+
 .icon-btn {
     position: relative;
     border: 0;
@@ -515,6 +542,45 @@ a {
     line-height: 1.5
 }
 
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px
+}
+
+.tip-card {
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: var(--cream)
+}
+
+.tip-number {
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase
+}
+
+.tip-card h3 {
+    margin: 12px 0 7px;
+    font: 700 21px 'Playfair Display', serif
+}
+
+.tip-card p,
+.demo-caption {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6
+}
+
+.demo-caption {
+    margin-top: 15px;
+    font-size: 11px
+}
+
 .offer {
     padding: 32px;
     border-radius: 18px;
@@ -533,6 +599,55 @@ a {
 .offer p {
     margin: 0;
     color: #684b45
+}
+
+.offer>div {
+    display: grid;
+    justify-items: start;
+    gap: 8px
+}
+
+.referral-section {
+    padding-top: 0
+}
+
+.referral-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 30px 34px;
+    border-radius: 18px;
+    background: #f3e5d8
+}
+
+.referral-banner h2 {
+    margin: 8px 0;
+    font: 700 30px 'Playfair Display', serif
+}
+
+.referral-banner p {
+    max-width: 660px;
+    margin: 0 0 9px;
+    color: var(--muted);
+    line-height: 1.6
+}
+
+.referral-banner small {
+    color: var(--muted);
+    font-size: 11px
+}
+
+.referral-stamp {
+    display: grid;
+    flex: 0 0 92px;
+    width: 92px;
+    height: 92px;
+    place-items: center;
+    border: 1px solid #cfae91;
+    border-radius: 50%;
+    color: var(--green);
+    font-size: 42px
 }
 
 .offer form {
@@ -636,6 +751,17 @@ details p {
     border-top: 1px solid #ffffff25;
     color: #bca99b;
     font-size: 11px
+}
+
+.company-id {
+    font-weight: 700
+}
+
+.external-demo-note {
+    margin: 22px 0 0;
+    color: #bca99b;
+    font-size: 11px;
+    line-height: 1.5
 }
 
 .legal-links {
@@ -1044,6 +1170,79 @@ details p {
     line-height: 1.5
 }
 
+.pix-demo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px;
+    border: 1px dashed var(--green);
+    border-radius: 11px;
+    background: #fff
+}
+
+.pix-demo-visual {
+    flex: 0 0 112px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    background: white
+}
+
+.pix-demo-visual svg {
+    display: block;
+    width: 100%;
+    fill: var(--ink);
+    shape-rendering: crispEdges
+}
+
+.pix-demo b,
+.fiscal-demo h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px
+}
+
+.pix-demo p,
+.fiscal-demo p {
+    margin: 6px 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5
+}
+
+.pix-demo code {
+    display: block;
+    overflow-wrap: anywhere;
+    color: var(--green-dark);
+    font-size: 11px
+}
+
+.fiscal-demo {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff
+}
+
+.fiscal-demo h4 {
+    margin: 8px 0 12px
+}
+
+.fiscal-document {
+    display: grid;
+    gap: 5px;
+    margin: 9px 0;
+    padding: 11px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    text-align: left;
+    font-size: 11px
+}
+
+.fiscal-document span {
+    color: var(--muted);
+    line-height: 1.45
+}
+
 .empty {
     text-align: center;
     color: var(--muted);
@@ -1279,12 +1478,20 @@ details p {
         flex-direction: column
     }
 
+    .tips-grid {
+        grid-template-columns: 1fr 1fr
+    }
+
     .offer form {
         min-width: 100%
     }
 
     .story {
         gap: 35px
+    }
+
+    .referral-banner {
+        align-items: flex-start
     }
 }
 
@@ -1310,12 +1517,52 @@ details p {
         height: 33px
     }
 
-    .nav-links {
-        display: none
+    .nav-menu-toggle {
+        display: block;
+        flex: 0 0 40px
     }
 
-    .nav-track-btn {
-        display: none
+    .nav-menu-toggle[aria-expanded="true"] span:first-child {
+        transform: translateY(6px) rotate(45deg)
+    }
+
+    .nav-menu-toggle[aria-expanded="true"] span:nth-child(2) {
+        opacity: 0
+    }
+
+    .nav-menu-toggle[aria-expanded="true"] span:last-child {
+        transform: translateY(-6px) rotate(-45deg)
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        padding: 8px 20px 14px;
+        border-bottom: 1px solid var(--line);
+        background: var(--cream);
+        box-shadow: var(--shadow)
+    }
+
+    .nav-links.open {
+        display: flex
+    }
+
+    .nav-links a,
+    .nav-links .nav-track-btn {
+        display: block;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        text-align: left
+    }
+
+    .nav-links .nav-track-btn {
+        border-bottom: 0
     }
 
     .nav-actions {
@@ -1376,6 +1623,21 @@ details p {
         gap: 11px
     }
 
+    .tips-grid {
+        grid-template-columns: 1fr
+    }
+
+    .referral-banner {
+        padding: 23px
+    }
+
+    .referral-stamp {
+        flex-basis: 58px;
+        width: 58px;
+        height: 58px;
+        font-size: 28px
+    }
+
     .product-photo {
         height: 155px
     }
@@ -1430,6 +1692,11 @@ details p {
 
     .footer-grid {
         grid-template-columns: 1fr 1fr
+    }
+
+    .pix-demo {
+        align-items: flex-start;
+        flex-direction: column 1fr
     }
 
     .footer-grid>div:first-child {

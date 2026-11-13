@@ -16,18 +16,20 @@ Loja demonstrativa responsiva para venda de compotas e geleias caseiras feitas c
 - Catálogo responsivo de geleias, compotas e kits, com busca, filtros e ordenação por preço.
 - Carrinho persistido no navegador, ajuste de quantidades, remoção de produtos, cupom demonstrativo `AFETO10` e subtotal atualizado.
 - Consulta demonstrativa de frete por CEP (tabela simulada: R$ 12 e estimativa de 2 dias úteis em Rio Branco).
-- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, opções de frete, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Frete grátis padrão a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento, e-mail ou nota fiscal é processado; não informar dados de pagamento reais.
+- Checkout em etapas, disponível somente com uma conta demonstrativa autenticada: endereço/CEP, opções de frete, Pix/cartão/carteira simulados, revisão de itens e valores, aceite e confirmação com número de pedido. Pix mostra um QR visual e um código textual não pagáveis. Frete grátis padrão a partir de R$ 180; cupom `AFETO10` dá 10% e Pix mais 5% (ambos ilustrativos). Nenhuma cobrança, pagamento ou e-mail é processado; não informar dados de pagamento reais.
+- Após a confirmação, é exibida uma prévia local de NF-e de produtos e um exemplo separado de NFS-e, ambos sem validade fiscal e sem transmissão à SEFAZ ou prefeitura.
 - Criação de conta, login, edição de nome/e-mail, alteração de senha, endereço salvo e histórico de pedidos neste navegador. A senha é armazenada com hash PBKDF2 e salt no armazenamento local; a conta não tem servidor nem sincroniza entre dispositivos.
-- Formulário de newsletter demonstrativo, história da marca, FAQ, atendimento e políticas no rodapé.
+- História da marca, seção de dicas, banner de indicação demonstrativo, FAQ, atendimento e políticas no rodapé.
+- CTA de criação de conta na oferta; CNPJ, contatos e links de redes sociais são fictícios e identificados como tal na página.
 - Aviso de consentimento: analytics só é carregado depois do aceite; recusar mantém o carrinho e recursos essenciais.
 
 ## Marketing digital e 4Ps
 
-- **Atração/SEO:** título, descrição, Open Graph, conteúdo textual indexável, navegação por seções e catálogo. O blog, campanhas de e-mail, redes sociais e mídia paga são canais planejados, não integrações de envio ativas.
+- **Atração/SEO:** título, descrição, imagem Open Graph, URL canonical, `robots.txt`, `sitemap.xml`, conteúdo textual indexável, navegação por seções, dicas e catálogo. Campanhas de e-mail, redes sociais e mídia paga são canais planejados, não integrações de envio ativas.
 - **Produto:** catálogo com descrição, categoria, peso do pote e campos preparados para suas imagens.
 - **Preço:** preço por pote/kit e desconto ilustrativo de 5% no Pix.
 - **Praça:** site responsivo previsto para acesso 24/7 em celular e desktop; operação comercial depende de hospedagem e logística reais.
-- **Promoção:** cupom de primeira compra apresentado no formulário demonstrativo; divulgação planejada por redes sociais, SEO, e-mail e anúncios.
+- **Promoção:** cupom de primeira compra, CTA de cadastro e banner de indicação apresentados como demonstrações; nenhuma campanha ou programa de indicação está ativo.
 
 ## Estratégia e operação
 
@@ -49,4 +51,4 @@ Frete nesta versão é uma estimativa fixa ilustrativa. Em produção, integrar 
 
 ## Privacidade, conformidade e limites
 
-O site exibe política de privacidade/cookies, canal de atendimento, informação de entrega, política de trocas/devoluções e referência ao direito de arrependimento. A marca e os contatos exibidos são demonstrativos. Antes de uma operação real, substitua os dados fictícios, publique uma política revisada pelo responsável, implemente controles LGPD, segurança de backend, confirmação de pedido, pagamento seguro, emissão fiscal e logística. Consentimento analítico é guardado no armazenamento local do navegador.
+O site exibe política de privacidade/cookies, canal de atendimento, informação de entrega, política de trocas/devoluções e referência ao direito de arrependimento. CNPJ, contatos e links de redes sociais são fictícios; Google Fonts e Google Analytics (após consentimento) são serviços externos reais. Antes de uma operação real, substitua os dados fictícios, publique uma política revisada pelo responsável, implemente controles LGPD, segurança de backend, confirmação de pedido, pagamento seguro, emissão fiscal e logística. Consentimento analítico é guardado no armazenamento local do navegador.

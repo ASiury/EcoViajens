@@ -5,11 +5,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#fff9f1">
-    <meta name="description"
-        content="Compotas e geleias artesanais feitas em pequenos lotes com frutas regionais da Amazônia. Sabores de cupuaçu, açaí, taperebá e muito mais.">
+    <meta name="description" content="Compotas e geleias artesanais feitas em pequenos lotes com frutas regionais da Amazônia. Sabores de cupuaçu, açaí, taperebá e muito mais.">
     <meta property="og:title" content="Doce Afeto | Compotas e geleias regionais">
     <meta property="og:description" content="Frutas da Amazônia transformadas em compotas e geleias artesanais.">
     <meta property="og:type" content="website">
+    <meta property="og:image" content="https://asiury.github.io/EcoViajens/imgs/destaque-compotas.png">
+    <link rel="canonical" href="https://asiury.github.io/EcoViajens/">
+    <link rel="icon" href="imgs/brand.jpeg" type="image/jpeg">
     <title>Doce Afeto — Compotas e geleias regionais</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,10 +28,12 @@
         <div class="wrap nav">
             <a class="brand" href="#inicio" aria-label="Doce Afeto, início"><img src="imgs/brand.jpeg"
                     class="brand-mark">doce afeto</a>
-            <nav class="nav-links" aria-label="Navegação principal"><a href="#catalogo">Cardápio</a><a
-                    href="#historia">Nossa história</a><a href="#duvidas">Dúvidas</a><button class="nav-track-btn" id="track-order-open" aria-label="Acompanhar pedido">Acompanhar pedido</button></nav>
+            <nav class="nav-links" id="primary-nav" aria-label="Navegação principal"><a href="#catalogo">Cardápio</a><a
+                    href="#historia">Nossa história</a><a href="#dicas">Dicas</a><a href="#duvidas">Dúvidas</a><button class="nav-track-btn" id="track-order-open" aria-label="Acompanhar pedido">Acompanhar pedido</button></nav>
             <div class="nav-actions">
                 <a class="btn small" href="#catalogo">Encomendar</a>
+                <button class="nav-menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Abrir menu"
+                    aria-controls="primary-nav" aria-expanded="false"><span></span><span></span><span></span></button>
                 <button class="icon-btn" id="account-open" aria-label="Minha conta" title="Minha conta">♙</button>
                 <button class="icon-btn" id="cart-open" aria-label="Abrir carrinho">♧<span class="cart-count"
                         id="cart-count">0</span></button>
@@ -54,7 +58,7 @@
                     </div>
                 </div>
                 <div class="hero-image image-placeholder">
-                    <img src="imgs/destaque-compotas.png" alt="Compotas em destaque">
+                    <img src="imgs/destaque-compotas.png" alt="Compotas em destaque" fetchpriority=high>
                     <div class="sticker">frutas<br>da nossa<br>terra</div>
                 </div>
             </div>
@@ -89,7 +93,7 @@
         <section class="section" id="historia">
             <div class="wrap story">
                 <div class="story-img image-placeholder">
-                    <img src="imgs/producao.png" alt="Produção de doces">
+                    <img src="imgs/producao.png" alt="Produção de doces" fetchpriority=high>
                 </div>
                 <div>
                     <span class="eyebrow">Da floresta para a sua mesa</span>
@@ -114,18 +118,52 @@
                 </div>
             </div>
         </section>
+        <section class="section white" id="dicas">
+            <div class="wrap">
+                <div class="section-head">
+                    <div><span class="eyebrow">Caderno de sabores</span>
+                        <h2>Dicas para aproveitar cada pote</h2>
+                    </div>
+                    <p class="section-intro">Ideias simples para combinar sabores regionais no dia a dia.</p>
+                </div>
+                <div class="tips-grid">
+                    <article class="tip-card"><span class="tip-number">01 · Café da manhã</span>
+                        <h3>Um toque de taperebá</h3>
+                        <p>Experimente a geleia com pão de fermentação natural, queijo branco ou tapioca quentinha.</p>
+                    </article>
+                    <article class="tip-card"><span class="tip-number">02 · Na cozinha</span>
+                        <h3>Molho agridoce rápido</h3>
+                        <p>Misture uma colher de geleia com limão e use como acompanhamento para legumes assados.</p>
+                    </article>
+                    <article class="tip-card"><span class="tip-number">03 · Conservação</span>
+                        <h3>Depois de abrir</h3>
+                        <p>Use utensílios limpos e siga as orientações de conservação indicadas no rótulo do produto.</p>
+                    </article>
+                </div>
+                <p class="demo-caption">Conteúdo demonstrativo; consulte sempre as instruções reais do rótulo.</p>
+            </div>
+        </section>
         <section class="section white">
             <div class="wrap">
                 <div class="offer">
-                    <div><span class="eyebrow">Um mimo na sua caixa de entrada</span>
+                    <div>
+                        <span class="eyebrow">Um mimo na sua caixa de entrada</span>
                         <h2>Ganhe 10% na primeira encomenda</h2>
-                        <p>Novos sabores da estação, receitas e um cupom de boas-vindas.</p>
+                        <p>Crie sua conta de demonstração e conheça o cupom de boas-vindas AFETO10.</p>
                     </div>
-                    <form id="newsletter">
-                        <input type="email" name="email" placeholder="Seu melhor e-mail" required
-                            aria-label="Seu e-mail">
-                        <button class="btn" type="submit">Quero meu cupom</button>
-                    </form>
+                    <button class="btn" id="create-account-offer" type="button">Criar minha conta</button>
+                </div>
+            </div>
+        </section>
+        <section class="section referral-section">
+            <div class="wrap">
+                <div class="referral-banner">
+                    <div><span class="eyebrow">Afeto compartilhado</span>
+                        <h2>Indique a Doce Afeto</h2>
+                        <p>Convide alguém para conhecer os sabores regionais. Na loja real, indicações podem render vantagens para quem convida e para quem chega.</p>
+                        <small>Campanha e benefícios apenas ilustrativos; não há programa de indicação ativo.</small>
+                    </div>
+                    <span class="referral-stamp" aria-hidden="true">♡</span>
                 </div>
             </div>
         </section>
@@ -170,8 +208,9 @@
     <footer class="footer">
         <div class="wrap">
             <div class="footer-grid">
-                <div><a class="brand" href="#inicio"><img src="imgs/brand.jpeg" class="brand-mark"> doce afeto</a>
+                <div><a class="brand" href="#inicio"><img src="imgs/brand.jpeg" class="brand-mark" fetchpriority="high"> doce afeto</a>
                     <p>Compotas e geleias caseiras com frutas regionais.<br>Feitas com carinho em Rio Branco, Acre.</p>
+                    <p class="company-id">CNPJ fictício: 00.000.000/0000-00</p>
                 </div>
                 <div>
                     <h3>Atendimento</h3>
@@ -182,8 +221,12 @@
                     <h3>Informações</h3>
                     <p><a href="#politica" data-modal="politica">Privacidade e cookies</a><br><a href="#trocas"
                             data-modal="trocas">Trocas e devoluções</a><br>Entrega em Rio Branco e região</p>
+                    <h3>Redes sociais</h3>
+                    <p><a href="#instagram" data-placeholder-link aria-disabled="true">Instagram</a><br><a
+                            href="#whatsapp" data-placeholder-link aria-disabled="true">WhatsApp</a></p>
                 </div>
             </div>
+            <p class="external-demo-note">CNPJ, contatos e links de redes sociais são fictícios; não há canal comercial ativo. Google Fonts e, somente após consentimento, Google Analytics são serviços externos reais.</p>
             <div class="footer-bottom"><span>© 2026 Doce Afeto · Projeto demonstrativo acadêmico</span><span>Pagamentos
                     e pedidos não são processados nesta demonstração.</span></div>
         </div>

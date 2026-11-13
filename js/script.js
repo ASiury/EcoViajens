@@ -31,7 +31,6 @@ function renderProducts() {
     document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => addToCart(b.dataset.add));
 }
 
-// ── Contagem do carrinho sem chamar renderCart (evita erro quando drawer está fechado) ──
 function updateCartCount() {
     document.getElementById('cart-count').textContent = Object.values(cart).reduce((a, b) => a + b, 0);
 }
@@ -39,7 +38,6 @@ function updateCartCount() {
 function saveCart() {
     localStorage.setItem('doceafeto-compotas-cart', JSON.stringify(cart));
     updateCartCount();
-    // Só renderiza o cart se o drawer estiver aberto
     if (document.getElementById('cart').classList.contains('open')) {
         renderCart();
     }
@@ -99,6 +97,45 @@ function checkoutProgress() {
     return `<div class="checkout-progress">${['Carrinho', 'Entrega', 'Pagamento', 'Revisão'].map((label, i) => `<span class="${checkoutStep >= i ? 'done' : ''}"><b>${i + 1}</b>${label}</span>`).join('')}</div>`;
 }
 
+function pixDemoMarkup() {
+    const modules = [];
+    for (let y = 0; y < 21; y++) {
+        for (let x = 0; x < 21; x++) {
+            const finder = [[0, 0], [14, 0], [0, 14]].find(([left, top]) => x >= left && x < left + 7 && y >= top && y < top + 7);
+            let filled;
+            if (finder) {
+                const localX = x - finder[0], localY = y - finder[1];
+                filled = localX === 0 || localX === 6 || localY === 0 || localY === 6 ||
+                    (localX >= 2 && localX <= 4 && localY >= 2 && localY <= 4);
+            } else {
+                filled = (x * 17 + y * 31 + x * y * 7) % 11 < 5;
+            }
+            if (filled) modules.push(`<rect x="${x}" y="${y}" width="1" height="1"/>`);
+        }
+    }
+    return `<div class="pix-demo" role="group" aria-label="Representação ilustrativa de Pix, sem cobrança">
+        <div class="pix-demo-visual"><svg viewBox="0 0 21 21" role="img" aria-label="Imagem ilustrativa, não é um QR Code válido">${modules.join('')}</svg></div>
+        <div><b>Pix demonstrativo</b><p>Imagem e código fictícios. Não escaneie nem use para pagar.</p>
+        <code>PIX-DEMO-NAO-PAGAVEL-DOCE-AFETO</code></div>
+    </div>`;
+}
+
+function fiscalDemoMarkup(order) {
+    return `<section class="fiscal-demo" aria-label="Demonstração de documento fiscal">
+        <span class="eyebrow">Exemplo local · sem validade fiscal</span>
+        <h4>Prévia de emissão fiscal</h4>
+        <div class="fiscal-document"><b>NF-e demonstrativa · modelo 55</b>
+            <span>Referência: ${escapeHtml(order.id)} · Total: ${brl(order.total)}</span>
+            <span>Status: rascunho local · chave de acesso não emitida</span>
+        </div>
+        <div class="fiscal-document"><b>NFS-e demonstrativa · exemplo de serviço</b>
+            <span>Exemplo visual separado deste pedido de produtos.</span>
+            <span>Status: simulação · nenhum documento foi transmitido à prefeitura ou à SEFAZ</span>
+        </div>
+        <p>Esta representação não é uma nota fiscal, DANFE ou comprovante e não substitui emissão por sistema fiscal autorizado.</p>
+    </section>`;
+}
+
 function closeCart() {
     document.getElementById('cart').classList.remove('open');
 }
@@ -124,7 +161,7 @@ function renderCart() {
     }
     const subtotal = cartSubtotal();
     if (checkoutStep === 0) {
-        el.innerHTML = `${checkoutProgress()}<div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'"><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div><div class="coupon-box"><label for="coupon-code">Cupom de primeira compra</label><div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div><small id="coupon-message">Use AFETO10 para 10% de desconto (demonstração).</small></div><div class="cart-total"><span>Subtotal</span><span>${brl(subtotal)}</span></div>${checkoutData.coupon === 'AFETO10' ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(couponDiscount())}</span></div>` : ''}<div class="notice">Checkout demonstrativo. Seus dados ficam apenas neste navegador; nenhum pagamento será cobrado.</div><button class="btn full" id="start-checkout">Continuar para entrega · ${brl(subtotal - couponDiscount())}</button><p class="checkout-login-note">É necessário entrar ou criar uma conta para continuar.</p>`;
+        el.innerHTML = `${checkoutProgress()}<div class="cart-items">${entries.map(([id, q]) => { const p = products.find(x => x.id === id); return `<div class="cart-item"><img src="${imageUrl(p.img)}" alt="" onerror="this.style.display='none'" fetchpriority=high><div><h4>${p.name}</h4><small>${brl(p.price)} · pote/kit</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Diminuir">−</button>${q}<button data-qty="${id}" data-delta="1" aria-label="Aumentar">+</button></div></div><button class="remove" data-remove="${id}">Remover</button></div>`; }).join('')}</div><div class="coupon-box"><label for="coupon-code">Cupom de primeira compra</label><div><input id="coupon-code" placeholder="Digite AFETO10" value="${escapeHtml(checkoutData.coupon)}"><button class="btn outline small" id="apply-coupon">Aplicar</button></div><small id="coupon-message">Use AFETO10 para 10% de desconto (demonstração).</small></div><div class="cart-total"><span>Subtotal</span><span>${brl(subtotal)}</span></div>${checkoutData.coupon === 'AFETO10' ? `<div class="summary-line"><span>Cupom AFETO10</span><span>− ${brl(couponDiscount())}</span></div>` : ''}<div class="notice">Checkout demonstrativo. Seus dados ficam apenas neste navegador; nenhum pagamento será cobrado.</div><button class="btn full" id="start-checkout">Continuar para entrega · ${brl(subtotal - couponDiscount())}</button><p class="checkout-login-note">É necessário entrar ou criar uma conta para continuar.</p>`;
         document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => { const id = b.dataset.qty; cart[id] = (cart[id] || 0) + Number(b.dataset.delta); if (cart[id] <= 0) delete cart[id]; saveCart(); });
         document.querySelectorAll('[data-remove]').forEach(b => b.onclick = () => { delete cart[b.dataset.remove]; saveCart(); });
         document.getElementById('apply-coupon').onclick = () => { const code = document.getElementById('coupon-code').value.trim().toUpperCase(); checkoutData.coupon = code === 'AFETO10' ? code : ''; if (checkoutData.coupon) track('coupon_applied', { coupon: checkoutData.coupon }); renderCart(); document.getElementById('coupon-message').textContent = checkoutData.coupon ? 'Cupom aplicado: 10% de desconto.' : 'Cupom inválido. Confira o código e tente novamente.'; };
@@ -135,8 +172,9 @@ function renderCart() {
         document.getElementById('back-cart').onclick = () => { checkoutStep = 0; renderCart(); };
         document.getElementById('shipping-form').onsubmit = e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); if (data.cep.replace(/\D/g, '').length !== 8) { toast('Informe um CEP válido para continuar.'); return; } checkoutData = { ...checkoutData, ...data, cep: data.cep.replace(/\D/g, '') }; track('add_shipping_info', { shipping_tier: checkoutData.shipping }); checkoutStep = 2; renderCart(); };
     } else if (checkoutStep === 2) {
-        el.innerHTML = `${checkoutProgress()}<form id="payment-form" class="checkout-form"><h3>Forma de pagamento</h3><label class="payment-option"><input type="radio" name="payment" value="pix" ${checkoutData.payment === 'pix' ? 'checked' : ''}><span><b>Pix</b><small>Simulação · 5% de desconto</small></span></label><label class="payment-option"><input type="radio" name="payment" value="card" ${checkoutData.payment === 'card' ? 'checked' : ''}><span><b>Cartão de crédito</b><small>Simulação em ambiente de teste · sem informar número do cartão</small></span></label><label class="payment-option"><input type="radio" name="payment" value="wallet" ${checkoutData.payment === 'wallet' ? 'checked' : ''}><span><b>Carteira digital</b><small>Simulação · nenhuma carteira será acessada</small></span></label><div class="notice">Não informe número de cartão, senha bancária ou chave Pix. Esta demonstração não se conecta a um intermediador.</div><div class="step-actions"><button class="btn outline" type="button" id="back-shipping">Voltar</button><button class="btn" type="submit">Revisar pedido</button></div></form>`;
+        el.innerHTML = `${checkoutProgress()}<form id="payment-form" class="checkout-form"><h3>Forma de pagamento</h3><label class="payment-option"><input type="radio" name="payment" value="pix" ${checkoutData.payment === 'pix' ? 'checked' : ''}><span><b>Pix</b><small>Simulação · 5% de desconto</small></span></label><label class="payment-option"><input type="radio" name="payment" value="card" ${checkoutData.payment === 'card' ? 'checked' : ''}><span><b>Cartão de crédito</b><small>Simulação em ambiente de teste · sem informar número do cartão</small></span></label><label class="payment-option"><input type="radio" name="payment" value="wallet" ${checkoutData.payment === 'wallet' ? 'checked' : ''}><span><b>Carteira digital</b><small>Simulação · nenhuma carteira será acessada</small></span></label>${checkoutData.payment === 'pix' ? pixDemoMarkup() : ''}<div class="notice">Não informe número de cartão, senha bancária ou chave Pix. Esta demonstração não se conecta a um intermediador.</div><div class="step-actions"><button class="btn outline" type="button" id="back-shipping">Voltar</button><button class="btn" type="submit">Revisar pedido</button></div></form>`;
         document.getElementById('back-shipping').onclick = () => { checkoutStep = 1; renderCart(); };
+        document.querySelectorAll('#payment-form input[name="payment"]').forEach(input => input.onchange = () => { checkoutData.payment = input.value; renderCart(); });
         document.getElementById('payment-form').onsubmit = e => { e.preventDefault(); checkoutData.payment = new FormData(e.target).get('payment'); track('add_payment_info', { payment_type: checkoutData.payment }); checkoutStep = 3; renderCart(); };
     } else {
         const delivery = checkoutData.shipping === 'express' ? 'Expressa · até 1 dia útil' : 'Padrão · até 2 dias úteis';
@@ -179,17 +217,15 @@ function completeOrder(entries) {
     localStorage.setItem('doceafeto-session', JSON.stringify(currentAccount));
     track('purchase', { transaction_id: order.id, currency: 'BRL', value: order.total, items: order.items.map(i => ({ item_id: i.id, item_name: i.name, quantity: i.quantity, price: i.unitPrice })) });
     cart = {};
-    // Atualiza contagem sem chamar renderCart (o drawer vai ser re-renderizado logo abaixo)
     localStorage.setItem('doceafeto-compotas-cart', JSON.stringify(cart));
     updateCartCount();
     checkoutStep = 0;
-    document.getElementById('cart-content').innerHTML = `<div class="order-success"><div class="success-mark">✓</div><span class="eyebrow">Pedido recebido</span><h3>Obrigada, ${escapeHtml(order.customer)}!</h3><p>Pedido <b>${order.id}</b></p><p>Você escolheu ${order.payment === 'pix' ? 'Pix (simulado)' : order.payment === 'card' ? 'cartão (simulado)' : 'carteira digital (simulada)'}. Nenhum pagamento ou envio real foi feito.</p><div class="summary-line"><span>Total da simulação</span><b>${brl(order.total)}</b></div><p>Na loja real, esta etapa enviaria a confirmação por e-mail e encaminharia o pagamento para o provedor seguro.</p><div class="step-actions"><button class="btn outline" id="track-order-btn">Acompanhar pedido</button><button class="btn full" id="done-order">Concluir</button></div></div>`;
+    document.getElementById('cart-content').innerHTML = `<div class="order-success"><div class="success-mark">✓</div><span class="eyebrow">Pedido recebido</span><h3>Obrigada, ${escapeHtml(order.customer)}!</h3><p>Pedido <b>${order.id}</b></p><p>Você escolheu ${order.payment === 'pix' ? 'Pix (simulado)' : order.payment === 'card' ? 'cartão (simulado)' : 'carteira digital (simulada)'}. Nenhum pagamento ou envio real foi feito.</p><div class="summary-line"><span>Total da simulação</span><b>${brl(order.total)}</b></div>${fiscalDemoMarkup(order)}<p>Na loja real, esta etapa enviaria a confirmação por e-mail e encaminharia o pagamento para o provedor seguro.</p><div class="step-actions"><button class="btn outline" id="track-order-btn">Acompanhar pedido</button><button class="btn full" id="done-order">Concluir</button></div></div>`;
     document.getElementById('done-order').onclick = () => closeCart();
     document.getElementById('track-order-btn').onclick = () => { closeCart(); openOrderTracker(order.id); };
     toast('Pedido demonstrativo registrado.');
 }
 
-// ── Acompanhamento de pedido ──────────────────────────────────────────────────
 
 function openOrderTracker(highlightId = null) {
     const box = document.getElementById('modal-content');
@@ -255,8 +291,6 @@ function openOrderTracker(highlightId = null) {
 
     document.getElementById('modal').classList.add('open');
 }
-
-// ── Conta ─────────────────────────────────────────────────────────────────────
 
 function openAccount(mode = 'login') { renderAccount(mode); document.getElementById('modal').classList.add('open'); }
 
@@ -366,18 +400,40 @@ document.getElementById('cart-open').onclick = () => {
 };
 
 document.getElementById('account-open').onclick = () => openAccount(currentAccount ? 'profile' : 'login');
+document.getElementById('create-account-offer').onclick = () => openAccount('register');
 document.getElementById('cart-close').onclick = () => closeCart();
 document.getElementById('cart').onclick = e => { if (e.target.id === 'cart') closeCart(); };
 
-// Acompanhar pedido — link na nav
 document.getElementById('track-order-open').onclick = () => openOrderTracker();
 
-document.getElementById('newsletter').onsubmit = e => {
-    e.preventDefault();
-    track('generate_lead', { method: 'newsletter' });
-    toast('Cadastro demonstrativo recebido. Obrigado!');
-    e.target.reset();
+const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+const primaryNav = document.getElementById('primary-nav');
+
+function closeMobileMenu() {
+    primaryNav.classList.remove('open');
+    mobileMenuToggle.setAttribute('aria-expanded', 'false');
+    mobileMenuToggle.setAttribute('aria-label', 'Abrir menu');
+}
+
+mobileMenuToggle.onclick = () => {
+    const isOpen = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
+    primaryNav.classList.toggle('open', !isOpen);
+    mobileMenuToggle.setAttribute('aria-expanded', String(!isOpen));
+    mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Abrir menu' : 'Fechar menu');
 };
+
+primaryNav.querySelectorAll('a, button').forEach(item => item.addEventListener('click', closeMobileMenu));
+document.addEventListener('click', event => {
+    if (primaryNav.classList.contains('open') && !primaryNav.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+        closeMobileMenu();
+    }
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeMobileMenu();
+});
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 640) closeMobileMenu();
+});
 
 const policies = {
     politica: `<h2>Privacidade e cookies</h2><p>Este projeto é uma demonstração acadêmica da marca fictícia Doce Afeto. Os dados de conta, endereço, carrinho e pedidos ficam somente no armazenamento local deste navegador; nada é enviado a um servidor nem usado para cobrança. Não use dados pessoais ou senhas reais.</p><p>Com seu consentimento, o Google Analytics (ID ${GA_ID}) coleta dados de navegação pseudonimizados para estatísticas de uso. Você pode recusar cookies analíticos sem perder as funções essenciais. O site não deve ser usado para inserir dados pessoais reais.</p><p>Em uma operação comercial, a empresa responsável identificaria o controlador, canal de contato, finalidades e bases legais de tratamento, prazos de retenção e direitos do titular, conforme a LGPD.</p>`,
@@ -389,6 +445,8 @@ document.querySelectorAll('[data-modal]').forEach(a => a.onclick = e => {
     document.getElementById('modal-content').innerHTML = policies[a.dataset.modal];
     document.getElementById('modal').classList.add('open');
 });
+
+document.querySelectorAll('[data-placeholder-link]').forEach(a => a.onclick = e => e.preventDefault());
 
 document.getElementById('modal-close').onclick = () => document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').onclick = e => { if (e.target.id === 'modal') e.currentTarget.classList.remove('open'); };
