@@ -1496,6 +1496,16 @@ details p {
 }
 
 @media(max-width:640px) {
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        position: sticky;
+    }
+
+    .nav {
+        position: relative;
+    }
     .wrap {
         width: min(100% - 30px, 520px)
     }
@@ -1696,7 +1706,7 @@ details p {
 
     .pix-demo {
         align-items: flex-start;
-        flex-direction: column 1fr
+        flex-direction: column;
     }
 
     .footer-grid>div:first-child {
